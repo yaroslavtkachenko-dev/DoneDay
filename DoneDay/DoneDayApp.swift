@@ -14,7 +14,7 @@ struct DoneDayApp: App {
 
     var body: some Scene {
         WindowGroup {
-            EnhancedContentView()
+            SplashScreenView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
