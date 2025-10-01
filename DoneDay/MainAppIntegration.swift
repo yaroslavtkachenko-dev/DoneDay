@@ -16,6 +16,8 @@ struct EnhancedContentView: View {
     @State private var selectedFilter: TaskFilter = .all
     @State private var selectedProject: ProjectEntity?
     @State private var showingProjectDetail = false
+    @State private var selectedTask: TaskEntity?
+    @State private var taskToEdit: TaskEntity?
     
     enum TaskFilter: String, CaseIterable {
         case all = "Всі"
@@ -95,11 +97,32 @@ struct EnhancedContentView: View {
                     if filteredTasks.isEmpty {
                         EnhancedEmptyStateView(filter: selectedFilter.rawValue)
                     } else {
-                        TaskListView(
-                            tasks: filteredTasks,
-                            taskViewModel: taskViewModel,
-                            onDelete: taskViewModel.deleteTasks
-                        )
+                        ScrollView {
+                            LazyVStack(spacing: 12) {
+                                ForEach(filteredTasks, id: \.objectID) { task in
+                    TaskCardWithActions(
+                        task: task,
+                        taskViewModel: taskViewModel,
+                        projectColor: task.project?.colorValue ?? .blue,
+                        onTap: {
+                            print("🖱️ EnhancedContentView - Task tapped: \(task.title ?? "Без назви")")
+                            selectedTask = task
+                        },
+                        onEdit: {
+                            print("✏️ EnhancedContentView - Task edit: \(task.title ?? "Без назви")")
+                            taskToEdit = task
+                        },
+                        onDelete: {
+                            print("🗑️ EnhancedContentView - Task delete: \(task.title ?? "Без назви")")
+                            taskViewModel.deleteTask(task)
+                        }
+                    )
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 16)
+                            .padding(.bottom, 100) // Простір для FAB
+                        }
                     }
                 }
             }
@@ -125,6 +148,24 @@ struct EnhancedContentView: View {
                 ProjectDetailView(project: project, taskViewModel: taskViewModel)
                     .adaptiveModalSize()
             }
+        .sheet(item: $taskToEdit) { task in
+            NavigationStack {
+                ModernEditTaskView(task: task, taskViewModel: taskViewModel)
+            }
+            #if os(macOS)
+            .frame(minWidth: 650, idealWidth: 750, maxWidth: 900)
+            .frame(minHeight: 650, idealHeight: 800, maxHeight: 1000)
+            #endif
+        }
+        .sheet(item: $selectedTask) { task in
+            NavigationStack {
+                ModernTaskDetailView(task: task, taskViewModel: taskViewModel)
+            }
+            #if os(macOS)
+            .frame(minWidth: 650, idealWidth: 750, maxWidth: 900)
+            .frame(minHeight: 650, idealHeight: 800, maxHeight: 1000)
+            #endif
+        }
             
             // Detail placeholder
             VStack {
@@ -796,7 +837,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 #Preview {
     EnhancedContentView()
 }
-
 // MARK: - Enhanced Views
 
 struct EnhancedEmptyStateView: View {
@@ -840,3 +880,4 @@ struct EnhancedEmptyStateView: View {
         .background(Color.clear)
     }
 }
+

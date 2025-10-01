@@ -1,0 +1,272 @@
+{
+  "source": "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ProjectDeletionView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 93
+        }
+      },
+      {
+        "comment": "",
+        "key": "Скасувати",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "Видалити проект",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 102
+        }
+      },
+      {
+        "comment": "",
+        "key": "Видалити проект",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 168
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ви збираєтесь видалити проект \"%@\"",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 172
+        }
+      },
+      {
+        "comment": "",
+        "key": "У цьому проекті %lld активних завдань. Оберіть, що з ними робити:",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "У цьому проекті немає активних завдань.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 182
+        }
+      },
+      {
+        "comment": "",
+        "key": "Що робити з завданнями?",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 199
+        }
+      },
+      {
+        "comment": "",
+        "key": "Оберіть проект-призначення:",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 301
+        }
+      },
+      {
+        "comment": "",
+        "key": "Немає доступних проектів",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 307
+        }
+      },
+      {
+        "comment": "",
+        "key": "Завдання проекту",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 376
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld завдань",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 380
+        }
+      },
+      {
+        "comment": "",
+        "key": "і ще %lld завдань...",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 412
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 517
+        }
+      },
+      {
+        "comment": "",
+        "key": "Скасувати",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 520
+        }
+      },
+      {
+        "comment": "",
+        "key": "Завершити проект",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 526
+        }
+      },
+      {
+        "comment": "",
+        "key": "Завершити проект",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 598
+        }
+      },
+      {
+        "comment": "",
+        "key": "Вітаємо! Ви готові завершити проект \"%@\"",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 602
+        }
+      },
+      {
+        "comment": "",
+        "key": "Оберіть, як завершити проект та що робити з незавершеними завданнями",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 606
+        }
+      },
+      {
+        "comment": "",
+        "key": "Статистика проекту",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 628
+        }
+      },
+      {
+        "comment": "",
+        "key": "Опції завершення",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 701
+        }
+      },
+      {
+        "comment": "",
+        "key": "Буде переміщено %lld завдань",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 754
+        }
+      },
+      {
+        "comment": "",
+        "key": "Додаткові налаштування",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 794
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 813
+        }
+      },
+      {
+        "comment": "",
+        "key": "Архівувати проект",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 802
+        }
+      },
+      {
+        "comment": "",
+        "key": "Завершений проект буде переміщено в архів",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 806
+        }
+      },
+      {
+        "comment": "",
+        "key": "Нотатки про завершення",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 819
+        }
+      },
+      {
+        "comment": "",
+        "key": "Додайте коментар про завершення проекту...",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 824
+        }
+      },
+      {
+        "comment": "",
+        "key": "Незавершені завдання",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 842
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld завдань",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 846
+        }
+      },
+      {
+        "comment": "",
+        "key": "і ще %lld завдань...",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 874
+        }
+      },
+      {
+        "comment": "",
+        "key": "Прострочено",
+        "location": {
+          "startingColumn": 53,
+          "startingLine": 865
+        }
+      },
+      {
+        "comment": "",
+        "key": "До %@",
+        "location": {
+          "startingColumn": 80,
+          "startingLine": 865
+        }
+      }
+    ]
+  },
+  "version": 1
+}

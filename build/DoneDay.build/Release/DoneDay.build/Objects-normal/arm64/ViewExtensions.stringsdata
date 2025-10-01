@@ -1,0 +1,32 @@
+{
+  "source": "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ViewExtensions.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Мої Проєкти",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 510
+        }
+      },
+      {
+        "comment": "",
+        "key": "Активні проєкти",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 520
+        }
+      },
+      {
+        "comment": "",
+        "key": "12 проєктів",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 522
+        }
+      }
+    ]
+  },
+  "version": 1
+}

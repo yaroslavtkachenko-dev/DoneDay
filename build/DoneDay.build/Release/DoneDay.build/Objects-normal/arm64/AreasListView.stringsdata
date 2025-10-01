@@ -1,0 +1,176 @@
+{
+  "source": "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/AreasListView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Області",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "Детальний перегляд області",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 120
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ваші області",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 148
+        }
+      },
+      {
+        "comment": "",
+        "key": "Організуйте проекти за сферами життя",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 152
+        }
+      },
+      {
+        "comment": "",
+        "key": "Пошук областей...",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 234
+        }
+      },
+      {
+        "comment": "",
+        "key": "Очистити",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 238
+        }
+      },
+      {
+        "comment": "",
+        "key": "Сортування",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 287
+        }
+      },
+      {
+        "comment": "",
+        "key": "Нова область",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 305
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 421
+        }
+      },
+      {
+        "comment": "",
+        "key": "проектів",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 424
+        }
+      },
+      {
+        "comment": "",
+        "key": "Прогрес",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 466
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 470
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 535
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld проектів",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 553
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld завдань",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 561
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld готово",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 570
+        }
+      },
+      {
+        "comment": "",
+        "key": "Нічого не знайдено",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 619
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ще немає областей",
+        "location": {
+          "startingColumn": 73,
+          "startingLine": 619
+        }
+      },
+      {
+        "comment": "",
+        "key": "Спробуйте змінити пошуковий запит або створіть нову область",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 624
+        }
+      },
+      {
+        "comment": "",
+        "key": "Створіть області для організації проектів за сферами життя",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 625
+        }
+      },
+      {
+        "comment": "",
+        "key": "Приклади областей:",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 633
+        }
+      }
+    ]
+  },
+  "version": 1
+}

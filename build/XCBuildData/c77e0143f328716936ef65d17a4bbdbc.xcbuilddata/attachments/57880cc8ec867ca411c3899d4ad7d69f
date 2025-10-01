@@ -1,0 +1,151 @@
+{
+  "" : {
+    "const-values" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay-primary.swiftconstvalues",
+    "dependencies" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay-primary.d",
+    "diagnostics" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay-primary.dia",
+    "emit-module-dependencies" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay-primary-emit-module.dia",
+    "pch" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay-primary.swiftdeps"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/AddEditProjectView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AddEditProjectView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AddEditProjectView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AddEditProjectView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/AreasListView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AreasListView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AreasListView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AreasListView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ContentView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/DataManager.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DataManager.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DataManager.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DataManager.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/DoneDayApp.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDayApp.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDayApp.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDayApp.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/MainAppIntegration.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/MainAppIntegration.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/MainAppIntegration.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/MainAppIntegration.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ModernAddTaskView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ModernAddTaskView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ModernAddTaskView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ModernAddTaskView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ModernTaskDetailView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ModernTaskDetailView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ModernTaskDetailView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ModernTaskDetailView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/Persistence.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/Persistence.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/Persistence.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/Persistence.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ProjectDeletionView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectDeletionView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectDeletionView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectDeletionView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ProjectDetailView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectDetailView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectDetailView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectDetailView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ProjectExtensions.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectExtensions.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectExtensions.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectExtensions.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ProjectsCoordinatorView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectsCoordinatorView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectsCoordinatorView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectsCoordinatorView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ProjectsListView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectsListView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectsListView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectsListView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/Repository.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/Repository.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/Repository.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/Repository.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/SplashScreenView.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/SplashScreenView.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/SplashScreenView.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/SplashScreenView.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/TaskViewModel.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TaskViewModel.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TaskViewModel.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TaskViewModel.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ViewExtensions.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ViewExtensions.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ViewExtensions.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ViewExtensions.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/CoreDataGenerated/DoneDay/AreaEntity+CoreDataClass.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AreaEntity+CoreDataClass.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AreaEntity+CoreDataClass.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AreaEntity+CoreDataClass.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/CoreDataGenerated/DoneDay/AreaEntity+CoreDataProperties.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AreaEntity+CoreDataProperties.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AreaEntity+CoreDataProperties.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/AreaEntity+CoreDataProperties.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/CoreDataGenerated/DoneDay/DoneDay+CoreDataModel.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay+CoreDataModel.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay+CoreDataModel.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/DoneDay+CoreDataModel.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/CoreDataGenerated/DoneDay/ProjectEntity+CoreDataClass.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectEntity+CoreDataClass.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectEntity+CoreDataClass.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectEntity+CoreDataClass.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/CoreDataGenerated/DoneDay/ProjectEntity+CoreDataProperties.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectEntity+CoreDataProperties.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectEntity+CoreDataProperties.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/ProjectEntity+CoreDataProperties.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/CoreDataGenerated/DoneDay/TagEntity+CoreDataClass.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TagEntity+CoreDataClass.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TagEntity+CoreDataClass.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TagEntity+CoreDataClass.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/CoreDataGenerated/DoneDay/TagEntity+CoreDataProperties.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TagEntity+CoreDataProperties.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TagEntity+CoreDataProperties.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TagEntity+CoreDataProperties.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/CoreDataGenerated/DoneDay/TaskEntity+CoreDataClass.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TaskEntity+CoreDataClass.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TaskEntity+CoreDataClass.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TaskEntity+CoreDataClass.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/CoreDataGenerated/DoneDay/TaskEntity+CoreDataProperties.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TaskEntity+CoreDataProperties.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TaskEntity+CoreDataProperties.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/TaskEntity+CoreDataProperties.o"
+  },
+  "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/yaroslavtkachenko/Desktop/DoneDay/build/DoneDay.build/Release/DoneDay.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}

@@ -110,9 +110,6 @@ struct AddEditProjectView: View {
             .frame(maxWidth: 600) // ✅ Обмежуємо ширину!
             .background(Color(NSColor.controlBackgroundColor))
             .navigationTitle("")
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-#endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Скасувати") {

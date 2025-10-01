@@ -1,0 +1,24 @@
+{
+  "source": "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/SplashScreenView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "DoneDay",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 92
+        }
+      },
+      {
+        "comment": "",
+        "key": "Організуйте своє життя",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 96
+        }
+      }
+    ]
+  },
+  "version": 1
+}

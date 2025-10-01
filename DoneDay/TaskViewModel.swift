@@ -1,6 +1,6 @@
 //
 //  TaskViewModel.swift
-//  DoneDay
+//  DoneDay - З ТЕГАМИ
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //
@@ -59,6 +59,10 @@ class TaskViewModel: ObservableObject {
     
     func loadTasks() {
         tasks = taskRepository.fetchActiveTasks()
+            .sorted { (task1: TaskEntity, task2: TaskEntity) in
+                // Сортуємо за sortOrder
+                return task1.sortOrder < task2.sortOrder
+            }
     }
     
     func loadProjects() {
@@ -76,7 +80,7 @@ class TaskViewModel: ObservableObject {
     // MARK: - Task Actions
     
     func addTask(title: String = "New Task", description: String = "", project: ProjectEntity? = nil, area: AreaEntity? = nil) {
-        let newTask = taskRepository.createTask(
+        let _ = taskRepository.createTask(
             title: title,
             description: description,
             area: area,
@@ -123,14 +127,23 @@ class TaskViewModel: ObservableObject {
     
     func getTodayTasks() -> [TaskEntity] {
         return taskRepository.fetchTodayTasks()
+            .sorted { (task1: TaskEntity, task2: TaskEntity) in
+                return task1.sortOrder < task2.sortOrder
+            }
     }
     
     func getUpcomingTasks() -> [TaskEntity] {
         return taskRepository.fetchUpcomingTasks()
+            .sorted { (task1: TaskEntity, task2: TaskEntity) in
+                return task1.sortOrder < task2.sortOrder
+            }
     }
     
     func getInboxTasks() -> [TaskEntity] {
         return taskRepository.fetchInboxTasks()
+            .sorted { (task1: TaskEntity, task2: TaskEntity) in
+                return task1.sortOrder < task2.sortOrder
+            }
     }
     
     func getCompletedTasks() -> [TaskEntity] {
@@ -161,7 +174,7 @@ class TaskViewModel: ObservableObject {
     // MARK: - Area Actions
     
     func addArea(name: String, description: String = "", iconName: String? = nil, color: String? = nil) {
-        let newArea = areaRepository.createArea(
+        let _ = areaRepository.createArea(
             name: name,
             notes: description,
             iconName: iconName,
@@ -173,6 +186,31 @@ class TaskViewModel: ObservableObject {
             loadAreas()
         } catch {
             print("Error creating area: \(error)")
+        }
+    }
+    
+    // MARK: - ✅ Tag Actions (НОВЕ!)
+    
+    func addTag(name: String, color: String? = nil) {
+        let _ = tagRepository.createTag(
+            name: name,
+            color: color
+        )
+        
+        do {
+            try tagRepository.save()
+            loadTags()
+        } catch {
+            print("Error creating tag: \(error)")
+        }
+    }
+    
+    func deleteTag(_ tag: TagEntity) {
+        do {
+            try tagRepository.delete(tag)
+            loadTags()
+        } catch {
+            print("Error deleting tag: \(error)")
         }
     }
 }

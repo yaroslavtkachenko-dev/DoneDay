@@ -1,0 +1,192 @@
+{
+  "source": "/Users/yaroslavtkachenko/Desktop/DoneDay/DoneDay/ProjectsListView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Проекти",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "Видалити проект?",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "Скасувати",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "Видалити",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "Проект \"%@\" буде видалено. Всі завдання будуть переміщені в Inbox.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 81
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ваші проекти",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 121
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld активних проектів",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 136
+        }
+      },
+      {
+        "comment": "",
+        "key": "Пошук проектів...",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 171
+        }
+      },
+      {
+        "comment": "",
+        "key": "Очистити",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 175
+        }
+      },
+      {
+        "comment": "",
+        "key": "Новий проект",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 334
+        }
+      },
+      {
+        "comment": "",
+        "key": "Прогрес",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 381
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/%lld",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 385
+        }
+      },
+      {
+        "comment": "",
+        "key": "Відкрити",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 408
+        }
+      },
+      {
+        "comment": "",
+        "key": "Редагувати",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 415
+        }
+      },
+      {
+        "comment": "",
+        "key": "Видалити",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 425
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 479
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/%lld завдань",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 513
+        }
+      },
+      {
+        "comment": "",
+        "key": "Нічого не знайдено",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 549
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ще немає проектів",
+        "location": {
+          "startingColumn": 73,
+          "startingLine": 549
+        }
+      },
+      {
+        "comment": "",
+        "key": "Спробуйте змінити пошуковий запит",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 553
+        }
+      },
+      {
+        "comment": "",
+        "key": "Створіть свій перший проект для організації завдань",
+        "location": {
+          "startingColumn": 102,
+          "startingLine": 553
+        }
+      }
+    ]
+  },
+  "version": 1
+}
