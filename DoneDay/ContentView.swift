@@ -19,6 +19,7 @@ struct ContentView: View {
     
     enum TaskFilter: String, CaseIterable {
         case all = "Всі"
+        
         case today = "Сьогодні"
         case upcoming = "Майбутні"
         case inbox = "Inbox"
@@ -63,7 +64,11 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
-                HeaderView(selectedFilter: selectedFilter, taskCount: filteredTasks.count)
+                HeaderView(
+                    taskViewModel: taskViewModel,
+                    selectedFilter: selectedFilter, 
+                    taskCount: filteredTasks.count
+                )
                 FilterPillsView(selectedFilter: $selectedFilter)
                 
                 if filteredTasks.isEmpty {
@@ -74,7 +79,7 @@ struct ContentView: View {
                         ForEach(filteredTasks, id: \.objectID) { task in
                             TaskCardWithActions(
                                 task: task,
-                                taskViewModel: taskViewModel,
+                        taskViewModel: taskViewModel,
                                 projectColor: task.project?.colorValue ?? .blue,
                                 onTap: {
                                     print("🖱️ Task tapped: \(task.title ?? "Без назви")")
@@ -147,6 +152,7 @@ struct ContentView: View {
 // MARK: - Header View
 
 struct HeaderView: View {
+    @ObservedObject var taskViewModel: TaskViewModel
     let selectedFilter: ContentView.TaskFilter
     let taskCount: Int
     
@@ -160,44 +166,46 @@ struct HeaderView: View {
         }
     }
     
+    // Кількість завдань на сьогодні
+    private var todayTasksCount: Int {
+        return taskViewModel.getTodayTasks().filter { !$0.isCompleted }.count
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
+        HStack(spacing: 0) {
+            // Ліва секція
                 VStack(alignment: .leading, spacing: 4) {
                     Text(greeting)
-                        .font(.title3)
+                    .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.secondary)
                     
                     Text("DoneDay")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.primary)
                 }
                 
                 Spacer()
                 
-                Button(action: {}) {
-                    Circle()
-                        .fill(.blue.gradient)
-                        .frame(width: 40, height: 40)
-                        .overlay {
-                            Text("Y")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                        }
+            // Права секція - бейджі
+            HStack(spacing: 12) {
+                QuickStatBadge(
+                    value: taskCount,
+                    label: taskCount == 1 ? "завдання" : "завдання"
+                )
+                
+                if todayTasksCount > 0 {
+                    QuickStatBadge(
+                        value: todayTasksCount,
+                        label: "сьогодні"
+                    )
                 }
             }
-            
-            HStack {
-                Image(systemName: selectedFilter.icon)
-                    .foregroundColor(selectedFilter.color)
-                Text("\(taskCount) \(selectedFilter.rawValue.lowercased())")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
         }
-        .adaptivePadding()
+        .padding(.horizontal, 24)
+        .padding(.vertical, 20)
         .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .adaptivePadding()
     }
 }
 

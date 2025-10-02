@@ -105,7 +105,27 @@ struct ProjectsOverviewTab: View {
                 )
                 
                 // Quick Stats
-                ProjectsQuickStats(analytics: analytics)
+                ProjectsQuickStats(
+                    taskViewModel: taskViewModel,
+                    onStatTap: { statType in
+                        switch statType {
+                        case .today:
+                            // TODO: Відкрити завдання на сьогодні
+                            print("Показати завдання на сьогодні")
+                        case .completed:
+                            // TODO: Показати виконані
+                            print("Показати виконані")
+                        case .inProgress:
+                            onShowAllProjects()
+                        case .upcoming:
+                            // TODO: Показати майбутні
+                            print("Показати майбутні")
+                        case .streak:
+                            // TODO: Показати статистику streak
+                            print("Streak деталі")
+                        }
+                    }
+                )
                 
                 // Recent Projects
                 RecentProjectsSection(
@@ -192,81 +212,171 @@ struct ProjectsOverviewHeader: View {
 }
 
 struct ProjectsQuickStats: View {
-    let analytics: ProjectAnalytics
+    @ObservedObject var taskViewModel: TaskViewModel
+    let onStatTap: ((StatType) -> Void)?
     
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    
-    private var adaptiveStatsColumns: [GridItem] {
-        let columnsCount = horizontalSizeClass == .compact ? 2 : 4
-        return Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount)
+    enum StatType {
+        case today, completed, inProgress, upcoming, streak
     }
     
-    private var adaptiveStatsSpacing: CGFloat {
-        horizontalSizeClass == .compact ? 12 : 16
+    // Обчислювані властивості для статистики
+    private var todayTasksCount: Int {
+        let today = Calendar.current.startOfDay(for: Date())
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
+        
+        return taskViewModel.tasks.filter { task in
+            guard !task.isCompleted && !task.isDelete else { return false }
+            if let dueDate = task.dueDate {
+                return dueDate >= today && dueDate < tomorrow
+            }
+            return false
+        }.count
+    }
+    
+    private var completedTodayCount: Int {
+        let today = Calendar.current.startOfDay(for: Date())
+        return taskViewModel.tasks.filter { task in
+            guard task.isCompleted && !task.isDelete else { return false }
+            if let completedDate = task.completedAt {
+                return Calendar.current.isDate(completedDate, inSameDayAs: today)
+            }
+            return false
+        }.count
+    }
+    
+    private var inProgressCount: Int {
+        return taskViewModel.projects.filter { !$0.isCompleted }.count
+    }
+    
+    private var upcomingCount: Int {
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
+        let nextWeek = Calendar.current.date(byAdding: .day, value: 7, to: Date())!
+        
+        return taskViewModel.tasks.filter { task in
+            guard !task.isCompleted && !task.isDelete else { return false }
+            if let dueDate = task.dueDate {
+                return dueDate >= tomorrow && dueDate < nextWeek
+            }
+            return false
+        }.count
+    }
+    
+    private var streakDays: Int {
+        let calendar = Calendar.current
+        var currentDate = Date()
+        var streak = 0
+        
+        for _ in 0..<30 {
+            let dayStart = calendar.startOfDay(for: currentDate)
+            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
+            
+            let hasCompletedTasks = taskViewModel.tasks.contains { task in
+                guard task.isCompleted && !task.isDelete else { return false }
+                if let completedDate = task.completedAt {
+                    return completedDate >= dayStart && completedDate < dayEnd
+                }
+                return false
+            }
+            
+            if hasCompletedTasks {
+                streak += 1
+                currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
+            } else {
+                break
+            }
+        }
+        
+        return streak
     }
     
     var body: some View {
-        LazyVGrid(columns: adaptiveStatsColumns, spacing: adaptiveStatsSpacing) {
+        HStack(spacing: 12) {
             QuickStatCard(
-                title: "Активні",
-                value: "\(analytics.activeProjects)",
-                icon: "folder",
-                color: .blue
+                value: "\(todayTasksCount)",
+                label: "Сьогодні",
+                accentColor: .blue,
+                onTap: { onStatTap?(.today) }
             )
             
             QuickStatCard(
-                title: "Завершені",
-                value: "\(analytics.completedProjects)",
-                icon: "checkmark.circle",
-                color: .green
+                value: "\(completedTodayCount)",
+                label: "Готово",
+                accentColor: .green,
+                onTap: { onStatTap?(.completed) }
             )
             
             QuickStatCard(
-                title: "Потребують уваги",
-                value: "\(analytics.projectsNeedingAttention.count)",
-                icon: "exclamationmark.triangle",
-                color: .orange
+                value: "\(inProgressCount)",
+                label: "У роботі",
+                accentColor: .purple,
+                onTap: { onStatTap?(.inProgress) }
             )
             
             QuickStatCard(
-                title: "Середньо завдань",
-                value: String(format: "%.1f", analytics.averageTasksPerProject),
-                icon: "list.bullet",
-                color: .purple
+                value: "\(upcomingCount)",
+                label: "Наближається",
+                accentColor: .orange,
+                onTap: { onStatTap?(.upcoming) }
+            )
+            
+            QuickStatCard(
+                value: "\(streakDays)",
+                label: streakDays == 1 ? "День" : (streakDays < 5 ? "Дні" : "Днів"),
+                accentColor: .red,
+                onTap: { onStatTap?(.streak) }
             )
         }
+        .padding(24)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
 
 struct QuickStatCard: View {
-    let title: String
     let value: String
-    let icon: String
-    let color: Color
+    let label: String
+    let accentColor: Color
+    let onTap: () -> Void
+    
+    @State private var isHovered = false
     
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-            
-            Text(value)
-                .font(.title)
-                .fontWeight(.bold)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+        Button(action: onTap) {
+            VStack(spacing: 0) {
+                // Кольорова лінія зверху
+                Rectangle()
+                    .fill(accentColor)
+                    .frame(height: 3)
+                
+                // Контент
+                VStack(spacing: 6) {
+                    Text(value)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                    
+                    Text(label)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color(NSColor.controlBackgroundColor).opacity(isHovered ? 0.8 : 0.3))
+                )
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
-        .frame(minHeight: 80, maxHeight: 120)
-        .frame(maxWidth: .infinity)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(color.opacity(0.3), lineWidth: 1)
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.2)) {
+                isHovered = hovering
+            }
         }
+        .scaleEffect(isHovered ? 1.02 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
     }
 }
 

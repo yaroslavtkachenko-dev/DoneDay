@@ -72,11 +72,9 @@ struct EnhancedContentView: View {
             VStack(spacing: 0) {
                 // Enhanced Header with Projects
                 EnhancedHeaderView(
-                    selectedFilter: selectedFilter,
-                    taskCount: selectedFilter == .projects ? taskViewModel.projects.count : filteredTasks.count,
-                    projectsCount: taskViewModel.projects.count,
                     taskViewModel: taskViewModel,
-                    onProjectsTap: { showingProjectsView = true }
+                    selectedFilter: selectedFilter, 
+                    taskCount: selectedFilter == .projects ? taskViewModel.projects.count : filteredTasks.count
                 )
                 
                 // Enhanced Filter Pills
@@ -183,11 +181,9 @@ struct EnhancedContentView: View {
 // MARK: - Enhanced Header View
 
 struct EnhancedHeaderView: View {
+    @ObservedObject var taskViewModel: TaskViewModel
     let selectedFilter: EnhancedContentView.TaskFilter
     let taskCount: Int
-    let projectsCount: Int
-    let taskViewModel: TaskViewModel
-    let onProjectsTap: () -> Void
     
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
@@ -199,83 +195,69 @@ struct EnhancedHeaderView: View {
         }
     }
     
+    // Кількість завдань на сьогодні
+    private var todayTasksCount: Int {
+        return taskViewModel.getTodayTasks().filter { !$0.isCompleted }.count
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(greeting)
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                    
-                    Text("DoneDay")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                }
+        HStack(spacing: 0) {
+            // Ліва секція
+            VStack(alignment: .leading, spacing: 4) {
+                Text(greeting)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.secondary)
                 
-                Spacer()
-                
-                // Projects quick access
-                Button(action: onProjectsTap) {
-                    HStack(spacing: 8) {
-                        VStack(spacing: 2) {
-                            Text("\(projectsCount)")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                            Text("проектів")
-                                .font(.caption2)
-                        }
-                        Image(systemName: "folder.fill")
-                            .font(.title3)
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(.purple.gradient)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
-                .buttonStyle(.plain)
-                
-                // Profile button
-                Button(action: {}) {
-                    Circle()
-                        .fill(.blue.gradient)
-                        .frame(width: 40, height: 40)
-                        .overlay {
-                            Text("Y")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                        }
-                }
+                Text("DoneDay")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.primary)
             }
             
-            // Current filter info
-            HStack {
-                Image(systemName: selectedFilter.icon)
-                    .foregroundColor(selectedFilter.color)
+            Spacer()
+            
+            // Права секція - бейджі
+            HStack(spacing: 12) {
+                QuickStatBadge(
+                    value: taskCount,
+                    label: taskCount == 1 ? "завдання" : "завдання"
+                )
                 
-                if selectedFilter == .projects {
-                    Text("\(taskCount) проектів")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("\(taskCount) \(selectedFilter.rawValue.lowercased())")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                // Quick stats
-                if selectedFilter != .projects {
-                    QuickStatsView(taskViewModel: taskViewModel)
+                if todayTasksCount > 0 {
+                    QuickStatBadge(
+                        value: todayTasksCount,
+                        label: "сьогодні"
+                    )
                 }
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
-        .padding(.bottom, 16)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 20)
         .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .adaptivePadding()
+    }
+}
+
+// MARK: - Quick Stat Badge
+
+struct QuickStatBadge: View {
+    let value: Int
+    let label: String
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            Text("\(value)")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(.primary)
+            
+            Text(label)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
