@@ -13,6 +13,7 @@ struct EnhancedContentView: View {
     @StateObject private var taskViewModel = TaskViewModel()
     @State private var showingAddTask = false
     @State private var showingProjectsView = false
+    @State private var showingAddProject = false
     @State private var selectedFilter: TaskFilter = .all
     @State private var selectedProject: ProjectEntity?
     @State private var showingProjectDetail = false
@@ -129,7 +130,7 @@ struct EnhancedContentView: View {
             .safeAreaInset(edge: .bottom) {
                 EnhancedFloatingActionButton(
                     onAddTask: { showingAddTask = true },
-                    onShowProjects: { showingProjectsView = true }
+                    onShowProjects: { showingAddProject = true }
                 )
                 .padding()
             }
@@ -141,6 +142,10 @@ struct EnhancedContentView: View {
                 ProjectsCoordinatorView()
                     .environmentObject(taskViewModel)
                     .adaptiveModalSize()
+            }
+            .sheet(isPresented: $showingAddProject) {
+                AddEditProjectView(taskViewModel: taskViewModel)
+                    .compactModalSize()
             }
             .sheet(item: $selectedProject) { project in
                 ProjectDetailView(project: project, taskViewModel: taskViewModel)
@@ -166,14 +171,7 @@ struct EnhancedContentView: View {
         }
             
             // Detail placeholder
-            VStack {
-                Image(systemName: selectedFilter == .projects ? "folder" : "doc.text")
-                    .font(.system(size: 64))
-                    .foregroundColor(.gray)
-                Text(selectedFilter == .projects ? "Оберіть проект" : "Оберіть завдання")
-                    .font(.title2)
-                    .foregroundColor(.secondary)
-            }
+            WeeklyOverviewView(taskViewModel: taskViewModel)
         }
     }
 }
@@ -220,6 +218,11 @@ struct EnhancedHeaderView: View {
                 QuickStatBadge(
                     value: taskCount,
                     label: taskCount == 1 ? "завдання" : "завдання"
+                )
+                
+                QuickStatBadge(
+                    value: taskViewModel.projects.count,
+                    label: taskViewModel.projects.count == 1 ? "проект" : "проектів"
                 )
                 
                 if todayTasksCount > 0 {
@@ -511,7 +514,7 @@ struct ProjectQuickCard: View {
                         .frame(width: 32, height: 32)
                         .overlay {
                             Image(systemName: project.iconName ?? "folder.fill")
-                                .foregroundColor(.white)
+                                .foregroundColor(.primary)
                                 .font(.caption)
                         }
                     
@@ -592,7 +595,7 @@ struct ProjectsEmptyState: View {
     }
 }
 
-// MARK: - Enhanced Floating Action Button
+// MARK: - Enhanced Floating Action Button (✅ ПОВНА РОБОЧА ВЕРСІЯ)
 
 struct EnhancedFloatingActionButton: View {
     let onAddTask: () -> Void
@@ -605,76 +608,88 @@ struct EnhancedFloatingActionButton: View {
             Spacer()
             
             VStack(spacing: 12) {
-                // Secondary buttons (shown when expanded)
+                // Додаткові кнопки (показуються коли розгорнуто)
                 if isExpanded {
-                    SecondaryFAB(
-                        icon: "folder.badge.plus",
-                        color: .purple,
-                        action: {
-                            withAnimation(.spring()) {
-                                isExpanded = false
-                            }
-                            onShowProjects()
+                    // Кнопка "Проєкти"
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            isExpanded = false
                         }
-                    )
+                        onShowProjects()
+                    }) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "folder.fill")
+                                .font(.body)
+                            Text("Новий проект")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(
+                            Capsule()
+                                .fill(.regularMaterial)
+                        )
+                        .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                    }
+                    .buttonStyle(.plain)
+                    .transition(.scale.combined(with: .opacity))
                     
-                    SecondaryFAB(
-                        icon: "plus",
-                        color: .blue,
-                        action: {
-                            withAnimation(.spring()) {
-                                isExpanded = false
-                            }
-                            onAddTask()
+                    // Кнопка "Нове завдання"
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            isExpanded = false
                         }
-                    )
+                        onAddTask()
+                    }) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.body)
+                            Text("Завдання")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(
+                            Capsule()
+                                .fill(.regularMaterial)
+                        )
+                        .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                    }
+                    .buttonStyle(.plain)
+                    .transition(.scale.combined(with: .opacity))
                 }
                 
-                // Main FAB
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        isExpanded.toggle()
+                // Головна кнопка "+"
+                Button(action: {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                        if isExpanded {
+                            // Якщо розгорнуто - закрити
+                            isExpanded = false
+                        } else {
+                            // Якщо згорнуто - розгорнути
+                            isExpanded = true
+                        }
                     }
-                } label: {
+                }) {
                     Image(systemName: isExpanded ? "xmark" : "plus")
                         .font(.title2)
                         .fontWeight(.semibold)
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                         .frame(width: 56, height: 56)
                         .background {
                             Circle()
-                                .fill(.blue.gradient)
-                                .shadow(color: .blue.opacity(0.3), radius: 8, y: 4)
+                                .fill(.regularMaterial)
+                                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
                         }
-                        .rotationEffect(.degrees(isExpanded ? 45 : 0))
+                        .rotationEffect(.degrees(isExpanded ? 135 : 0))
                 }
                 .buttonStyle(.plain)
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isExpanded)
-    }
-}
-
-struct SecondaryFAB: View {
-    let icon: String
-    let color: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: icon)
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-                .frame(width: 44, height: 44)
-                .background {
-                    Circle()
-                        .fill(color.gradient)
-                        .shadow(color: color.opacity(0.3), radius: 4, y: 2)
-                }
-        }
-        .buttonStyle(.plain)
-        .transition(.scale.combined(with: .opacity))
     }
 }
 
