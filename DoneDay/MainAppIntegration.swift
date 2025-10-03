@@ -99,7 +99,7 @@ struct EnhancedContentView: View {
                         ScrollView {
                             LazyVStack(spacing: 12) {
                                 ForEach(filteredTasks, id: \.objectID) { task in
-                    TaskCardWithActions(
+                    ImprovedTaskCard(
                         task: task,
                         taskViewModel: taskViewModel,
                         projectColor: task.project?.colorValue ?? .blue,
@@ -693,27 +693,30 @@ struct EnhancedFloatingActionButton: View {
     }
 }
 
-// MARK: - TaskViewModel Singleton Extension
+// MARK: - TaskViewModel Singleton Extension (DEPRECATED - Use @EnvironmentObject instead)
 
-extension TaskViewModel {
-    static let shared = TaskViewModel()
-}
+// extension TaskViewModel {
+//     static let shared = TaskViewModel()
+// }
 
 // MARK: - Updated DoneDay App
 
 struct UpdatedDoneDayApp: App {
     let persistenceController = PersistenceController.shared
+    @StateObject private var taskViewModel = TaskViewModel()
 
     var body: some Scene {
         WindowGroup {
             EnhancedContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(taskViewModel)
         }
         
         #if os(macOS)
         WindowGroup("Проекти") {
             ProjectsCoordinatorView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(taskViewModel)
         }
         .defaultSize(width: 1200, height: 800)
         #endif
@@ -724,7 +727,7 @@ struct UpdatedDoneDayApp: App {
 
 #if os(macOS)
 struct DoneDayMenuBarExtra: View {
-    @ObservedObject var taskViewModel = TaskViewModel.shared
+    @EnvironmentObject var taskViewModel: TaskViewModel
     
     private var todayTasks: [TaskEntity] {
         taskViewModel.getTodayTasks()
@@ -815,10 +818,12 @@ struct DoneDayMenuBarExtra: View {
 
 struct MenuBarApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var taskViewModel = TaskViewModel()
     
     var body: some Scene {
         MenuBarExtra("DoneDay", systemImage: "checkmark.circle") {
             DoneDayMenuBarExtra()
+                .environmentObject(taskViewModel)
         }
     }
 }

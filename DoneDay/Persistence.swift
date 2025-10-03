@@ -73,9 +73,15 @@ struct PersistenceController {
         }
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-
+                // Graceful error handling instead of crashing the app
+                print("❌ Core Data load error: \(error)")
+                print("❌ Error details: \(error.userInfo)")
+                
+                // Handle the error gracefully through ErrorAlertManager
+                DispatchQueue.main.async {
+                    ErrorAlertManager.shared.handle(.coreDataFetchFailed(error))
+                }
+                
                 /*
                  Typical reasons for an error here include:
                  * The parent directory does not exist, cannot be created, or disallows writing.
@@ -84,7 +90,6 @@ struct PersistenceController {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
-                fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
         container.viewContext.automaticallyMergesChangesFromParent = true

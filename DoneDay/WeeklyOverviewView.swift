@@ -1,6 +1,6 @@
 //
 //  WeeklyOverviewView.swift
-//  DoneDay - Тижневий огляд завдань
+//  DoneDay - Тижневий огляд з ПОКРАЩЕНИМ ЧЕКБОКСОМ
 //
 
 import SwiftUI
@@ -15,17 +15,14 @@ struct WeeklyOverviewView: View {
         let calendar = Calendar.current
         let today = Date()
         
-        // Знаходимо понеділок поточного тижня
         guard let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) else {
             return []
         }
         
-        // Додаємо offset для навігації між тижнями
         guard let adjustedWeekStart = calendar.date(byAdding: .weekOfYear, value: currentWeekOffset, to: weekStart) else {
             return []
         }
         
-        // Генеруємо всі 7 днів тижня
         return (0..<7).compactMap { dayOffset in
             calendar.date(byAdding: .day, value: dayOffset, to: adjustedWeekStart)
         }
@@ -47,10 +44,8 @@ struct WeeklyOverviewView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Заголовок з навігацією
                 headerView
                 
-                // Дні тижня з завданнями
                 VStack(spacing: 16) {
                     ForEach(currentWeekDates, id: \.self) { date in
                         DayCard(
@@ -96,7 +91,6 @@ struct WeeklyOverviewView: View {
                 
                 Spacer()
                 
-                // Навігація по тижнях
                 HStack(spacing: 12) {
                     Button(action: { currentWeekOffset -= 1 }) {
                         Image(systemName: "chevron.left")
@@ -190,7 +184,6 @@ struct DayCard: View {
                 
                 Spacer()
                 
-                // Кнопка Додати (показується тільки при наведенні)
                 if isHovered {
                     Button(action: onAddTask) {
                         Text("Додати")
@@ -205,7 +198,6 @@ struct DayCard: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 }
                 
-                // Бейдж з кількістю завдань
                 if !incompleteTasks.isEmpty {
                     Text("\(incompleteTasks.count)")
                         .font(.system(size: 13, weight: .medium))
@@ -227,7 +219,7 @@ struct DayCard: View {
             } else {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(incompleteTasks, id: \.objectID) { task in
-                        TaskRowCompact(task: task, taskViewModel: taskViewModel)
+                        ImprovedTaskRowCompact(task: task, taskViewModel: taskViewModel)
                         
                         if task != incompleteTasks.last {
                             Divider()
@@ -257,29 +249,31 @@ struct DayCard: View {
     }
 }
 
-// MARK: - Compact Task Row
+// MARK: - Покращений Compact Task Row
 
-struct TaskRowCompact: View {
+struct ImprovedTaskRowCompact: View {
     let task: TaskEntity
     @ObservedObject var taskViewModel: TaskViewModel
     
     var body: some View {
         HStack(spacing: 12) {
-            // Checkbox
-            Button(action: {
-                taskViewModel.toggleTaskCompletion(task)
-            }) {
-                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 20))
-                    .foregroundColor(task.isCompleted ? .green : .secondary)
-            }
-            .buttonStyle(.plain)
+            // Покращений чекбокс
+            ImprovedTaskCheckbox(
+                isCompleted: task.isCompleted,
+                action: {
+                    taskViewModel.toggleTaskCompletion(task)
+                },
+                size: 20,
+                color: .green
+            )
             
             // Текст завдання
             Text(task.title ?? "Без назви")
                 .font(.system(size: 14))
                 .foregroundColor(task.isCompleted ? .secondary : .primary)
-                .strikethrough(task.isCompleted)
+                .strikethrough(task.isCompleted, color: .secondary)
+                .opacity(task.isCompleted ? 0.6 : 1.0)
+                .animation(.easeInOut(duration: 0.2), value: task.isCompleted)
             
             Spacer()
             
@@ -333,7 +327,6 @@ struct QuickAddTaskView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Header
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(dayName)
@@ -348,7 +341,6 @@ struct QuickAddTaskView: View {
                 Spacer()
             }
             
-            // Task Input
             VStack(alignment: .leading, spacing: 12) {
                 Text("Назва завдання")
                     .font(.system(size: 14, weight: .medium))
@@ -359,7 +351,6 @@ struct QuickAddTaskView: View {
                     .font(.system(size: 16))
             }
             
-            // Action Buttons
             HStack(spacing: 12) {
                 Button("Скасувати") {
                     onDismiss()
@@ -380,35 +371,37 @@ struct QuickAddTaskView: View {
         .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(16)
         .frame(width: 400)
-        .onAppear {
-            // Focus на текстове поле
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                // Тут можна додати фокус на текстове поле
-            }
-        }
     }
     
     private func addTask() {
         let trimmedTitle = taskTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Створюємо завдання з датою виконання
-        let task = taskViewModel.taskRepository.createTask(
+        // Використовуємо покращений репозиторій з обробкою помилок
+        let improvedRepo = ImprovedTaskRepository()
+        let result = improvedRepo.createTask(
             title: trimmedTitle,
             description: "",
             area: nil,
             project: nil
         )
         
-        // Встановлюємо дату виконання
-        task.dueDate = date
-        task.updatedAt = Date()
-        
-        do {
-            try taskViewModel.taskRepository.save()
-            taskViewModel.loadTasks()
-            onDismiss()
-        } catch {
-            print("Error creating task: \(error)")
+        switch result {
+        case .success(let task):
+            // Встановлюємо дату виконання
+            task.dueDate = date
+            task.updatedAt = Date()
+            
+            // Зберігаємо зміни
+            let saveResult = improvedRepo.save()
+            switch saveResult {
+            case .success:
+                taskViewModel.loadTasks()
+                onDismiss()
+            case .failure(let error):
+                ErrorAlertManager.shared.handle(error)
+            }
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
 }

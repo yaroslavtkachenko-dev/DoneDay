@@ -16,18 +16,20 @@ extension TaskViewModel {
     // MARK: - Project Management Methods
     
     func updateProject(_ project: ProjectEntity, name: String, description: String?, area: AreaEntity?, color: String?, iconName: String?) {
-        project.name = name
-        project.notes = description
-        project.area = area
-        project.color = color
-        project.iconName = iconName
-        project.updatedAt = Date()
+        let result = projectRepository.updateProject(
+            project,
+            name: name,
+            notes: description,
+            area: area,
+            color: color,
+            iconName: iconName
+        )
         
-        do {
-            try projectRepository.save()
+        switch result {
+        case .success:
             loadProjects()
-        } catch {
-            print("Error updating project: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
@@ -37,13 +39,19 @@ extension TaskViewModel {
         switch completionOption {
         case .completeAll:
             for task in projectTasks where !task.isCompleted {
-                try? taskRepository.markCompleted(task)
+                let result = taskRepository.markCompleted(task)
+                if case .failure(let error) = result {
+                    print("Error completing task: \(error)")
+                }
             }
             
         case .completeActiveOnly:
             let activeTasks = projectTasks.filter { !$0.isCompleted }
             for task in activeTasks {
-                try? taskRepository.markCompleted(task)
+                let result = taskRepository.markCompleted(task)
+                if case .failure(let error) = result {
+                    print("Error completing task: \(error)")
+                }
             }
             
         case .moveIncompleteToInbox:
@@ -65,12 +73,13 @@ extension TaskViewModel {
             project.notes = currentNotes + separator + "Завершено: " + notes
         }
         
-        do {
-            try projectRepository.save()
+        let result = projectRepository.save()
+        switch result {
+        case .success:
             loadProjects()
             loadTasks()
-        } catch {
-            print("Error completing project: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
@@ -93,35 +102,38 @@ extension TaskViewModel {
             
         case .deleteTasks:
             for task in projectTasks {
-                try? taskRepository.softDelete(task)
+                let result = taskRepository.deleteTask(task)
+                if case .failure(let error) = result {
+                    print("Error deleting task: \(error)")
+                }
             }
         }
         
         // Delete the project
-        do {
-            try projectRepository.delete(project)
+        let deleteResult = projectRepository.deleteProject(project)
+        switch deleteResult {
+        case .success:
             loadProjects()
             loadTasks()
-        } catch {
-            print("Error deleting project: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
     func duplicateProject(_ project: ProjectEntity) {
-        let newProject = projectRepository.createProject(
+        let result = projectRepository.createProject(
             name: (project.name ?? "Project") + " Copy",
             notes: project.notes,
-            area: project.area
+            area: project.area,
+            color: project.color,
+            iconName: project.iconName
         )
         
-        newProject.color = project.color
-        newProject.iconName = project.iconName
-        
-        do {
-            try projectRepository.save()
+        switch result {
+        case .success:
             loadProjects()
-        } catch {
-            print("Error duplicating project: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
@@ -129,11 +141,12 @@ extension TaskViewModel {
         project.isCompleted = true
         project.updatedAt = Date()
         
-        do {
-            try projectRepository.save()
+        let result = projectRepository.save()
+        switch result {
+        case .success:
             loadProjects()
-        } catch {
-            print("Error archiving project: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
@@ -158,7 +171,14 @@ extension TaskViewModel {
     }
     
     func getCompletedProjects() -> [ProjectEntity] {
-        return projectRepository.fetch(predicate: NSPredicate(format: "isCompleted == true"))
+        let result = projectRepository.fetch(predicate: NSPredicate(format: "isCompleted == true"))
+        switch result {
+        case .success(let projects):
+            return projects
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+            return []
+        }
     }
     
     func getProjectsWithOverdueTasks() -> [ProjectEntity] {

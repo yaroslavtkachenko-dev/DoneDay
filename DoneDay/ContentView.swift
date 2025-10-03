@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  DoneDay - З правильним натисканням як у ProjectDetailView
+//  DoneDay - З ПОКРАЩЕНИМ ЧЕКБОКСОМ
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //
@@ -13,13 +13,12 @@ struct ContentView: View {
     @State private var showingAddTask = false
     @State private var selectedFilter: TaskFilter = .all
     @State private var taskToEdit: TaskEntity?
-    @State private var selectedTask: TaskEntity? // ✅ Для відкриття деталей
-    @State private var taskToDelete: TaskEntity? // ✅ Для видалення
+    @State private var selectedTask: TaskEntity?
+    @State private var taskToDelete: TaskEntity?
     @State private var showingDeleteTaskAlert = false
     
     enum TaskFilter: String, CaseIterable {
         case all = "Всі"
-        
         case today = "Сьогодні"
         case upcoming = "Майбутні"
         case inbox = "Inbox"
@@ -66,7 +65,7 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 HeaderView(
                     taskViewModel: taskViewModel,
-                    selectedFilter: selectedFilter, 
+                    selectedFilter: selectedFilter,
                     taskCount: filteredTasks.count
                 )
                 FilterPillsView(selectedFilter: $selectedFilter)
@@ -74,22 +73,20 @@ struct ContentView: View {
                 if filteredTasks.isEmpty {
                     EmptyStateView(filter: selectedFilter)
                 } else {
-                    // ✅ ІДЕНТИЧНО як у ProjectDetailView
                     List(selection: $selectedTask) {
                         ForEach(filteredTasks, id: \.objectID) { task in
-                            TaskCardWithActions(
+                            ImprovedTaskCard(
                                 task: task,
-                        taskViewModel: taskViewModel,
+                                taskViewModel: taskViewModel,
                                 projectColor: task.project?.colorValue ?? .blue,
                                 onTap: {
-                                    print("🖱️ Task tapped: \(task.title ?? "Без назви")")
-                                    selectedTask = task // ✅ Відкрити деталі
+                                    selectedTask = task
                                 },
                                 onEdit: {
-                                    taskToEdit = task // ✅ Редагувати
+                                    taskToEdit = task
                                 },
                                 onDelete: {
-                                    taskToDelete = task // ✅ Видалити
+                                    taskToDelete = task
                                     showingDeleteTaskAlert = true
                                 }
                             )
@@ -112,7 +109,6 @@ struct ContentView: View {
                 .padding()
             }
         } detail: {
-            // ✅ Detail view показує вибране завдання
             if let task = selectedTask {
                 ModernTaskDetailView(task: task, taskViewModel: taskViewModel)
             } else {
@@ -166,27 +162,24 @@ struct HeaderView: View {
         }
     }
     
-    // Кількість завдань на сьогодні
     private var todayTasksCount: Int {
         return taskViewModel.getTodayTasks().filter { !$0.isCompleted }.count
     }
     
     var body: some View {
         HStack(spacing: 0) {
-            // Ліва секція
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(greeting)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(greeting)
                     .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
-                    
-                    Text("DoneDay")
+                    .foregroundColor(.secondary)
+                
+                Text("DoneDay")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.primary)
-                }
-                
-                Spacer()
-                
-            // Права секція - бейджі
+            }
+            
+            Spacer()
+            
             HStack(spacing: 12) {
                 QuickStatBadge(
                     value: taskCount,
@@ -205,7 +198,7 @@ struct HeaderView: View {
         .padding(.vertical, 20)
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .adaptivePadding()
+        .adaptivePadding(.horizontal)
     }
 }
 
@@ -217,7 +210,7 @@ struct FilterPillsView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     private var adaptiveBottomPadding: CGFloat {
-        horizontalSizeClass == .compact ? 12 : 16
+        horizontalSizeClass == .compact ? 4 : 8
     }
     
     var body: some View {
@@ -228,15 +221,17 @@ struct FilterPillsView: View {
                         filter: filter,
                         isSelected: selectedFilter == filter
                     ) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        withAnimation(.spring(response: 0.3)) {
                             selectedFilter = filter
                         }
                     }
                 }
             }
-            .adaptivePadding()
+            .padding(.horizontal, 24)
+            .padding(.vertical, 12)
         }
         .padding(.bottom, adaptiveBottomPadding)
+        .adaptivePadding(.horizontal)
     }
 }
 
@@ -247,7 +242,7 @@ struct FilterPill: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: filter.icon)
                     .font(.caption)
                 Text(filter.rawValue)
@@ -256,20 +251,9 @@ struct FilterPill: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background {
-                if isSelected {
-                    Capsule()
-                        .fill(filter.color.opacity(0.2))
-                        .overlay {
-                            Capsule()
-                                .stroke(filter.color, lineWidth: 1)
-                        }
-                } else {
-                    Capsule()
-                        .fill(.regularMaterial)
-                }
-            }
-            .foregroundColor(isSelected ? filter.color : .primary)
+            .background(isSelected ? filter.color : Color.gray.opacity(0.1))
+            .foregroundColor(isSelected ? .white : filter.color)
+            .clipShape(Capsule())
         }
         .buttonStyle(.plain)
     }
@@ -317,66 +301,6 @@ struct EmptyStateView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-    }
-}
-
-// MARK: - Floating Action Button
-
-struct FloatingActionButton: View {
-    let action: () -> Void
-    
-    var body: some View {
-        HStack {
-            Spacer()
-            
-            Button(action: action) {
-                Image(systemName: "plus")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                    .frame(width: 56, height: 56)
-                    .background {
-                        Circle()
-                            .fill(.blue.gradient)
-                            .shadow(color: .blue.opacity(0.3), radius: 8, y: 4)
-                    }
-            }
-            .buttonStyle(.plain)
-        }
-    }
-}
-
-// MARK: - Tag Chip (helper view)
-
-struct TagChip: View {
-    let tag: TagEntity
-    
-    var body: some View {
-        Text(tag.name ?? "")
-            .font(.caption2)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(tag.colorValue.opacity(0.2))
-            .foregroundColor(tag.colorValue)
-            .clipShape(Capsule())
-    }
-}
-
-// MARK: - Extensions для TagEntity (ProjectEntity вже визначено в ProjectExtensions.swift)
-
-extension TagEntity {
-    var colorValue: Color {
-        switch color {
-        case "blue": return .blue
-        case "red": return .red
-        case "green": return .green
-        case "orange": return .orange
-        case "purple": return .purple
-        case "pink": return .pink
-        case "yellow": return .yellow
-        case "cyan": return .cyan
-        default: return .gray
-        }
     }
 }
 

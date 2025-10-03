@@ -17,9 +17,9 @@ class TaskViewModel: ObservableObject {
     @Published var areas: [AreaEntity] = []
     @Published var tags: [TagEntity] = []
     
-    // MARK: - Repositories
-    let taskRepository: TaskRepository
-    let projectRepository: ProjectRepository
+    // MARK: - Repositories (Using Improved versions with Result<Success, Error>)
+    let taskRepository: ImprovedTaskRepository
+    let projectRepository: ImprovedProjectRepository
     let areaRepository: AreaRepository
     let tagRepository: TagRepository
     
@@ -27,8 +27,8 @@ class TaskViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     init() {
-        self.taskRepository = TaskRepository()
-        self.projectRepository = ProjectRepository()
+        self.taskRepository = ImprovedTaskRepository()
+        self.projectRepository = ImprovedProjectRepository()
         self.areaRepository = AreaRepository()
         self.tagRepository = TagRepository()
         
@@ -58,15 +58,28 @@ class TaskViewModel: ObservableObject {
     }
     
     func loadTasks() {
-        tasks = taskRepository.fetchActiveTasks()
-            .sorted { (task1: TaskEntity, task2: TaskEntity) in
+        let result = taskRepository.fetchActiveTasks()
+        switch result {
+        case .success(let fetchedTasks):
+            tasks = fetchedTasks.sorted { (task1: TaskEntity, task2: TaskEntity) in
                 // Сортуємо за sortOrder
                 return task1.sortOrder < task2.sortOrder
             }
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+            tasks = []
+        }
     }
     
     func loadProjects() {
-        projects = projectRepository.fetchActiveProjects()
+        let result = projectRepository.fetchActiveProjects()
+        switch result {
+        case .success(let fetchedProjects):
+            projects = fetchedProjects
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+            projects = []
+        }
     }
     
     func loadAreas() {
@@ -80,40 +93,47 @@ class TaskViewModel: ObservableObject {
     // MARK: - Task Actions
     
     func addTask(title: String = "New Task", description: String = "", project: ProjectEntity? = nil, area: AreaEntity? = nil) {
-        let _ = taskRepository.createTask(
+        let result = taskRepository.createTask(
             title: title,
             description: description,
             area: area,
             project: project
         )
         
-        do {
-            try taskRepository.save()
+        switch result {
+        case .success(let task):
+            print("✅ Task created: \(task.title ?? "")")
             loadTasks()
-        } catch {
-            print("Error creating task: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
     func toggleTaskCompletion(_ task: TaskEntity) {
-        do {
-            if task.isCompleted {
-                try taskRepository.markIncomplete(task)
-            } else {
-                try taskRepository.markCompleted(task)
-            }
+        let result: Result<Void, AppError>
+        
+        if task.isCompleted {
+            result = taskRepository.markIncomplete(task)
+        } else {
+            result = taskRepository.markCompleted(task)
+        }
+        
+        switch result {
+        case .success:
             loadTasks()
-        } catch {
-            print("Error toggling task completion: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
     func deleteTask(_ task: TaskEntity) {
-        do {
-            try taskRepository.softDelete(task)
+        let result = taskRepository.deleteTask(task)
+        
+        switch result {
+        case .success:
             loadTasks()
-        } catch {
-            print("Error deleting task: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
@@ -126,34 +146,59 @@ class TaskViewModel: ObservableObject {
     // MARK: - Smart Lists
     
     func getTodayTasks() -> [TaskEntity] {
-        return taskRepository.fetchTodayTasks()
-            .sorted { (task1: TaskEntity, task2: TaskEntity) in
+        let result = taskRepository.fetchTodayTasks()
+        switch result {
+        case .success(let tasks):
+            return tasks.sorted { (task1: TaskEntity, task2: TaskEntity) in
                 return task1.sortOrder < task2.sortOrder
             }
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+            return []
+        }
     }
     
     func getUpcomingTasks() -> [TaskEntity] {
-        return taskRepository.fetchUpcomingTasks()
-            .sorted { (task1: TaskEntity, task2: TaskEntity) in
+        let result = taskRepository.fetchUpcomingTasks()
+        switch result {
+        case .success(let tasks):
+            return tasks.sorted { (task1: TaskEntity, task2: TaskEntity) in
                 return task1.sortOrder < task2.sortOrder
             }
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+            return []
+        }
     }
     
     func getInboxTasks() -> [TaskEntity] {
-        return taskRepository.fetchInboxTasks()
-            .sorted { (task1: TaskEntity, task2: TaskEntity) in
+        let result = taskRepository.fetchInboxTasks()
+        switch result {
+        case .success(let tasks):
+            return tasks.sorted { (task1: TaskEntity, task2: TaskEntity) in
                 return task1.sortOrder < task2.sortOrder
             }
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+            return []
+        }
     }
     
     func getCompletedTasks() -> [TaskEntity] {
-        return taskRepository.fetchCompletedTasks()
+        let result = taskRepository.fetchCompletedTasks()
+        switch result {
+        case .success(let tasks):
+            return tasks
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+            return []
+        }
     }
     
     // MARK: - Project Actions
     
     func addProject(name: String, description: String = "", area: AreaEntity? = nil, color: String = "blue", iconName: String = "folder.fill") -> ProjectEntity? {
-        let newProject = projectRepository.createProject(
+        let result = projectRepository.createProject(
             name: name,
             notes: description,
             area: area,
@@ -161,12 +206,13 @@ class TaskViewModel: ObservableObject {
             iconName: iconName
         )
         
-        do {
-            try projectRepository.save()
+        switch result {
+        case .success(let project):
+            print("✅ Project created: \(project.name ?? "")")
             loadProjects()
-            return newProject
-        } catch {
-            print("Error creating project: \(error)")
+            return project
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
             return nil
         }
     }
