@@ -182,6 +182,7 @@ struct EnhancedHeaderView: View {
     @ObservedObject var taskViewModel: TaskViewModel
     let selectedFilter: EnhancedContentView.TaskFilter
     let taskCount: Int
+    @StateObject private var dynamicIslandManager = DynamicIslandManager.shared
     
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
@@ -210,6 +211,26 @@ struct EnhancedHeaderView: View {
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.primary)
             }
+            
+            Spacer()
+            
+            // Центральна секція - Dynamic Island кнопка
+            Button(action: {
+                dynamicIslandManager.toggleDynamicIsland()
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: dynamicIslandManager.isVisible ? "island.fill" : "island")
+                        .font(.system(size: 16, weight: .medium))
+                    Text(dynamicIslandManager.isVisible ? "Приховати Island" : "Показати Island")
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .foregroundColor(.primary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(.regularMaterial)
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
             
             Spacer()
             

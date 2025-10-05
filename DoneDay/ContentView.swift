@@ -63,6 +63,11 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
+                // Dynamic Island
+                DynamicIslandOverlay(taskViewModel: taskViewModel)
+                    .padding(.top, 20)
+                    .padding(.horizontal, 24)
+                
                 HeaderView(
                     taskViewModel: taskViewModel,
                     selectedFilter: selectedFilter,
