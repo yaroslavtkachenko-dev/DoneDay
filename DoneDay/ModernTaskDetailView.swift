@@ -127,11 +127,12 @@ struct ModernTaskDetailView: View {
     }
     
     private func saveChanges() {
-        do {
-            try DataManager.shared.save()
+        let saveResult = DataManager.shared.save()
+        switch saveResult {
+        case .success:
             taskViewModel.loadTasks()
-        } catch {
-            print("Error saving task: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
 }

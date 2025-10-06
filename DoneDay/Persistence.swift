@@ -7,8 +7,12 @@
 
 import CoreData
 
-struct PersistenceController {
+class PersistenceController {
     static let shared = PersistenceController()
+    
+    // Flag to track if Core Data failed to load
+    private(set) var isStoreLoadFailed = false
+    private(set) var loadError: Error?
 
     @MainActor
     static let preview: PersistenceController = {
@@ -71,9 +75,16 @@ struct PersistenceController {
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+        
+        var loadFailed = false
+        var capturedError: Error?
+        
+        container.loadPersistentStores(completionHandler: { [weak self] (storeDescription, error) in
+            guard let self = self else { return }
             if let error = error as NSError? {
-                // Graceful error handling instead of crashing the app
+                loadFailed = true
+                capturedError = error
+                
                 print("❌ Core Data load error: \(error)")
                 print("❌ Error details: \(error.userInfo)")
                 
@@ -81,6 +92,9 @@ struct PersistenceController {
                 DispatchQueue.main.async {
                     ErrorAlertManager.shared.handle(.coreDataFetchFailed(error))
                 }
+                
+                // Try to recover by using in-memory store
+                self.setupFallbackStore()
                 
                 /*
                  Typical reasons for an error here include:
@@ -90,8 +104,38 @@ struct PersistenceController {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
+            } else {
+                print("✅ Core Data store loaded successfully")
             }
         })
+        
+        self.isStoreLoadFailed = loadFailed
+        self.loadError = capturedError
+        
         container.viewContext.automaticallyMergesChangesFromParent = true
+    }
+    
+    // MARK: - Graceful Degradation
+    
+    private func setupFallbackStore() {
+        print("🔄 Setting up fallback in-memory store...")
+        
+        // Create a new in-memory store as fallback
+        let description = NSPersistentStoreDescription()
+        description.type = NSInMemoryStoreType
+        description.shouldAddStoreAsynchronously = false
+        
+        do {
+            try container.persistentStoreCoordinator.addPersistentStore(
+                ofType: NSInMemoryStoreType,
+                configurationName: nil,
+                at: nil,
+                options: nil
+            )
+            print("✅ Fallback in-memory store created successfully")
+            print("⚠️ Data will not be persisted - this is a temporary solution")
+        } catch {
+            print("❌ Failed to create fallback store: \(error)")
+        }
     }
 }

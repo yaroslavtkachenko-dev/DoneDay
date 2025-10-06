@@ -152,9 +152,14 @@ struct AddEditProjectView: View {
             project.iconName = selectedIcon
             project.updatedAt = Date()
             
-            DataManager.shared.save()
-            print("✅ Project updated successfully")
-            presentationMode.wrappedValue.dismiss()
+            let saveResult = DataManager.shared.save()
+            switch saveResult {
+            case .success:
+                print("✅ Project updated successfully")
+                presentationMode.wrappedValue.dismiss()
+            case .failure(let error):
+                ErrorAlertManager.shared.handle(error)
+            }
         } else {
             // СТВОРЕННЯ НОВОГО ПРОЕКТУ
             print("🔍 Creating project:")

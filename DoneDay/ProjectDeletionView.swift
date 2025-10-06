@@ -138,11 +138,12 @@ struct ProjectDeletionView: View {
         // Delete the project
         DataManager.shared.context.delete(project)
         
-        do {
-            try DataManager.shared.save()
+        let saveResult = DataManager.shared.save()
+        switch saveResult {
+        case .success:
             presentationMode.wrappedValue.dismiss()
-        } catch {
-            print("Error deleting project: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
             isDeleting = false
         }
     }
@@ -569,11 +570,12 @@ struct ProjectCompletionView: View {
             project.notes = currentNotes + separator + "Завершено: " + completionNotes.trimmingCharacters(in: .whitespacesAndNewlines)
         }
         
-        do {
-            try DataManager.shared.save()
+        let saveResult = DataManager.shared.save()
+        switch saveResult {
+        case .success:
             presentationMode.wrappedValue.dismiss()
-        } catch {
-            print("Error completing project: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
             isCompleting = false
         }
     }

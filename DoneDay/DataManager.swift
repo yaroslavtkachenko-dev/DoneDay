@@ -25,17 +25,21 @@ class DataManager {
     
     // MARK: - Core Data Saving
     
-    func save() {
+    func save() -> Result<Void, AppError> {
         let context = persistentContainer.viewContext
         
-        if context.hasChanges {
-            do {
-                try context.save()
-                print("✅ Core Data saved successfully")
-            } catch {
-                print("❌ Core Data save error: \(error)")
-                print("❌ Error details: \(error.localizedDescription)")
-            }
+        guard context.hasChanges else {
+            return .success(())
+        }
+        
+        do {
+            try context.save()
+            print("✅ Core Data saved successfully")
+            return .success(())
+        } catch {
+            print("❌ Core Data save error: \(error)")
+            print("❌ Error details: \(error.localizedDescription)")
+            return .failure(.coreDataSaveFailed(error))
         }
     }
     

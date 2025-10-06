@@ -575,12 +575,13 @@ struct ModernEditTaskView: View {
         task.dueDate = hasDueDate ? dueDate : nil
         task.updatedAt = Date()
         
-        // Save through repository
-        do {
-            try DataManager.shared.save()
+        // Save through DataManager with proper error handling
+        let saveResult = DataManager.shared.save()
+        switch saveResult {
+        case .success:
             presentationMode.wrappedValue.dismiss()
-        } catch {
-            print("Error saving task: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
 }

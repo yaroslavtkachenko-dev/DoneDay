@@ -94,11 +94,12 @@ struct ProjectsListView: View {
         // Видалити проект
         DataManager.shared.context.delete(project)
         
-        do {
-            try DataManager.shared.save()
+        let saveResult = DataManager.shared.save()
+        switch saveResult {
+        case .success:
             print("✅ Project deleted successfully")
-        } catch {
-            print("❌ Error deleting project: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
 }
