@@ -376,9 +376,8 @@ struct QuickAddTaskView: View {
     private func addTask() {
         let trimmedTitle = taskTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Використовуємо покращений репозиторій з обробкою помилок
-        let improvedRepo = ImprovedTaskRepository()
-        let result = improvedRepo.createTask(
+        // ✅ Використовуємо репозиторій через TaskViewModel
+        let result = taskViewModel.taskRepository.createTask(
             title: trimmedTitle,
             description: "",
             area: nil,
@@ -392,7 +391,7 @@ struct QuickAddTaskView: View {
             task.updatedAt = Date()
             
             // Зберігаємо зміни
-            let saveResult = improvedRepo.save()
+            let saveResult = taskViewModel.taskRepository.save()
             switch saveResult {
             case .success:
                 taskViewModel.loadTasks()
@@ -410,7 +409,9 @@ struct QuickAddTaskView: View {
 
 struct WeeklyOverviewView_Previews: PreviewProvider {
     static var previews: some View {
-        WeeklyOverviewView(taskViewModel: TaskViewModel())
+        let viewModel = TaskViewModel()
+        return WeeklyOverviewView(taskViewModel: viewModel)
+            .environmentObject(viewModel)
             .frame(width: 400, height: 800)
     }
 }

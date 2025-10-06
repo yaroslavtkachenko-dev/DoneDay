@@ -17,9 +17,9 @@ class TaskViewModel: ObservableObject {
     @Published var areas: [AreaEntity] = []
     @Published var tags: [TagEntity] = []
     
-    // MARK: - Repositories (Using Improved versions with Result<Success, Error>)
-    let taskRepository: ImprovedTaskRepository
-    let projectRepository: ImprovedProjectRepository
+    // MARK: - Repositories (Using Result<Success, Error>)
+    let taskRepository: TaskRepository
+    let projectRepository: ProjectRepository
     let areaRepository: AreaRepository
     let tagRepository: TagRepository
     
@@ -27,8 +27,8 @@ class TaskViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     init() {
-        self.taskRepository = ImprovedTaskRepository()
-        self.projectRepository = ImprovedProjectRepository()
+        self.taskRepository = TaskRepository()
+        self.projectRepository = ProjectRepository()
         self.areaRepository = AreaRepository()
         self.tagRepository = TagRepository()
         
@@ -83,11 +83,25 @@ class TaskViewModel: ObservableObject {
     }
     
     func loadAreas() {
-        areas = areaRepository.fetchAllAreas()
+        let result = areaRepository.fetchAllAreas()
+        switch result {
+        case .success(let fetchedAreas):
+            areas = fetchedAreas
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+            areas = []
+        }
     }
     
     func loadTags() {
-        tags = tagRepository.fetchAllTags()
+        let result = tagRepository.fetchAllTags()
+        switch result {
+        case .success(let fetchedTags):
+            tags = fetchedTags
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+            tags = []
+        }
     }
     
     // MARK: - Task Actions
@@ -220,43 +234,45 @@ class TaskViewModel: ObservableObject {
     // MARK: - Area Actions
     
     func addArea(name: String, description: String = "", iconName: String? = nil, color: String? = nil) {
-        let _ = areaRepository.createArea(
+        let result = areaRepository.createArea(
             name: name,
             notes: description,
             iconName: iconName,
             color: color
         )
         
-        do {
-            try areaRepository.save()
+        switch result {
+        case .success:
             loadAreas()
-        } catch {
-            print("Error creating area: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
     // MARK: - ✅ Tag Actions (НОВЕ!)
     
     func addTag(name: String, color: String? = nil) {
-        let _ = tagRepository.createTag(
+        let result = tagRepository.createTag(
             name: name,
             color: color
         )
         
-        do {
-            try tagRepository.save()
+        switch result {
+        case .success:
             loadTags()
-        } catch {
-            print("Error creating tag: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
     func deleteTag(_ tag: TagEntity) {
-        do {
-            try tagRepository.delete(tag)
+        let result = tagRepository.deleteTag(tag)
+        
+        switch result {
+        case .success:
             loadTags()
-        } catch {
-            print("Error deleting tag: \(error)")
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
 }

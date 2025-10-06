@@ -1,6 +1,6 @@
 //
-//  UpdatedRepositories.swift
-//  DoneDay - Repository з обробкою помилок
+//  Repositories.swift
+//  DoneDay - Repository Pattern з Result<Success, Error>
 //
 //  Created by Yaroslav Tkachenko on 02.10.2025.
 //
@@ -10,7 +10,7 @@ import Foundation
 
 // MARK: - Base Repository з Result<Success, Error>
 
-class ImprovedBaseRepository<Entity: NSManagedObject> {
+class BaseRepository<Entity: NSManagedObject> {
     let context: NSManagedObjectContext
     let entityName: String
     
@@ -57,7 +57,7 @@ class ImprovedBaseRepository<Entity: NSManagedObject> {
 
 // MARK: - Task Repository з обробкою помилок
 
-class ImprovedTaskRepository: ImprovedBaseRepository<TaskEntity> {
+class TaskRepository: BaseRepository<TaskEntity> {
     
     init(context: NSManagedObjectContext = DataManager.shared.context) {
         super.init(context: context, entityName: "TaskEntity")
@@ -164,7 +164,7 @@ class ImprovedTaskRepository: ImprovedBaseRepository<TaskEntity> {
         return fetch(predicate: predicate)
     }
     
-    // MARK: - Smart Lists Methods (додано для уніфікації)
+    // MARK: - Smart Lists Methods
     
     func fetchTodayTasks() -> Result<[TaskEntity], AppError> {
         let today = Calendar.current.startOfDay(for: Date())
@@ -220,7 +220,7 @@ class ImprovedTaskRepository: ImprovedBaseRepository<TaskEntity> {
 
 // MARK: - Project Repository з обробкою помилок
 
-class ImprovedProjectRepository: ImprovedBaseRepository<ProjectEntity> {
+class ProjectRepository: BaseRepository<ProjectEntity> {
     
     init(context: NSManagedObjectContext = DataManager.shared.context) {
         super.init(context: context, entityName: "ProjectEntity")
@@ -317,55 +317,127 @@ class ImprovedProjectRepository: ImprovedBaseRepository<ProjectEntity> {
     }
 }
 
-// MARK: - Приклад використання в ViewModel (DEPRECATED - використовуйте методи з основного класу)
+// MARK: - Area Repository з обробкою помилок
 
-// extension TaskViewModel {
-//     
-//     func addTaskWithErrorHandling(
-//         title: String,
-//         description: String? = nil,
-//         project: ProjectEntity? = nil,
-//         area: AreaEntity? = nil
-//     ) {
-//         let improvedRepo = ImprovedTaskRepository() // ❌ Створює новий екземпляр
-//         let result = improvedRepo.createTask(
-//             title: title,
-//             description: description,
-//             area: area,
-//             project: project
-//         )
-//         
-//         switch result {
-//         case .success(let task):
-//             print("✅ Task created: \(task.title ?? "")")
-//             loadTasks()
-//         case .failure(let error):
-//             ErrorAlertManager.shared.handle(error)
-//         }
-//     }
-//     
-//     func addProjectWithErrorHandling(
-//         name: String,
-//         description: String? = nil,
-//         area: AreaEntity? = nil,
-//         color: String? = nil,
-//         iconName: String? = nil
-//     ) {
-//         let improvedRepo = ImprovedProjectRepository() // ❌ Створює новий екземпляр
-//         let result = improvedRepo.createProject(
-//             name: name,
-//             notes: description,
-//             area: area,
-//             color: color,
-//             iconName: iconName
-//         )
-//         
-//         switch result {
-//         case .success(let project):
-//             print("✅ Project created: \(project.name ?? "")")
-//             loadProjects()
-//         case .failure(let error):
-//             ErrorAlertManager.shared.handle(error)
-//         }
-//     }
-// }
+class AreaRepository: BaseRepository<AreaEntity> {
+    
+    init(context: NSManagedObjectContext = DataManager.shared.context) {
+        super.init(context: context, entityName: "AreaEntity")
+    }
+    
+    func createArea(
+        name: String,
+        notes: String? = nil,
+        iconName: String? = nil,
+        color: String? = nil
+    ) -> Result<AreaEntity, AppError> {
+        let area = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! AreaEntity
+        area.id = UUID()
+        area.name = name
+        area.notes = notes
+        area.iconName = iconName
+        area.color = color
+        area.createdAt = Date()
+        area.updatedAt = Date()
+        
+        let saveResult = save()
+        switch saveResult {
+        case .success:
+            return .success(area)
+        case .failure(let error):
+            return .failure(.areaCreationFailed(reason: error.localizedDescription))
+        }
+    }
+    
+    func fetchAllAreas() -> Result<[AreaEntity], AppError> {
+        let sortByName = [NSSortDescriptor(key: "name", ascending: true)]
+        let request = NSFetchRequest<AreaEntity>(entityName: entityName)
+        request.sortDescriptors = sortByName
+        
+        do {
+            let results = try context.fetch(request)
+            return .success(results)
+        } catch {
+            return .failure(.coreDataFetchFailed(error))
+        }
+    }
+    
+    func deleteArea(_ area: AreaEntity) -> Result<Void, AppError> {
+        let result = delete(area)
+        switch result {
+        case .success:
+            return .success(())
+        case .failure:
+            return .failure(.areaDeletionFailed(reason: "Не вдалося видалити область"))
+        }
+    }
+}
+
+// MARK: - Tag Repository з обробкою помилок
+
+class TagRepository: BaseRepository<TagEntity> {
+    
+    init(context: NSManagedObjectContext = DataManager.shared.context) {
+        super.init(context: context, entityName: "TagEntity")
+    }
+    
+    func createTag(
+        name: String,
+        color: String? = nil
+    ) -> Result<TagEntity, AppError> {
+        let tag = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! TagEntity
+        tag.id = UUID()
+        tag.name = name
+        tag.color = color
+        tag.createdAt = Date()
+        tag.updatedAt = Date()
+        
+        let saveResult = save()
+        switch saveResult {
+        case .success:
+            return .success(tag)
+        case .failure(let error):
+            return .failure(.areaCreationFailed(reason: error.localizedDescription))
+        }
+    }
+    
+    func fetchAllTags() -> Result<[TagEntity], AppError> {
+        let sortByName = [NSSortDescriptor(key: "name", ascending: true)]
+        let request = NSFetchRequest<TagEntity>(entityName: entityName)
+        request.sortDescriptors = sortByName
+        
+        do {
+            let results = try context.fetch(request)
+            return .success(results)
+        } catch {
+            return .failure(.coreDataFetchFailed(error))
+        }
+    }
+    
+    func findOrCreateTag(name: String) -> Result<TagEntity, AppError> {
+        let predicate = NSPredicate(format: "name == %@", name)
+        let existingResult = fetch(predicate: predicate)
+        
+        switch existingResult {
+        case .success(let existingTags):
+            if let existingTag = existingTags.first {
+                return .success(existingTag)
+            } else {
+                return createTag(name: name)
+            }
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+    
+    func deleteTag(_ tag: TagEntity) -> Result<Void, AppError> {
+        let result = delete(tag)
+        switch result {
+        case .success:
+            return .success(())
+        case .failure:
+            return .failure(.areaDeletionFailed(reason: "Не вдалося видалити тег"))
+        }
+    }
+}
+

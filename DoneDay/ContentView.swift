@@ -9,7 +9,7 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
-    @StateObject private var taskViewModel = TaskViewModel()
+    @EnvironmentObject var taskViewModel: TaskViewModel
     @State private var showingAddTask = false
     @State private var selectedFilter: TaskFilter = .all
     @State private var taskToEdit: TaskEntity?
@@ -311,4 +311,5 @@ struct EmptyStateView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(TaskViewModel())
 }

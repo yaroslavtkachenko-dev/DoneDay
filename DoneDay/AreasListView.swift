@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AreasListView: View {
-    @StateObject private var taskViewModel = TaskViewModel()
+    @EnvironmentObject var taskViewModel: TaskViewModel
     @State private var isGridView = true
     @State private var showingAddArea = false
     @State private var selectedArea: AreaEntity?

@@ -612,5 +612,7 @@ struct EditTaskHeader: View {
 }
 
 #Preview {
-    ModernAddTaskView(taskViewModel: TaskViewModel(), preselectedProject: nil)
+    let viewModel = TaskViewModel()
+    return ModernAddTaskView(taskViewModel: viewModel, preselectedProject: nil)
+        .environmentObject(viewModel)
 }

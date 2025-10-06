@@ -678,5 +678,7 @@ struct AddAreaView: View {
 }
 
 #Preview {
-    AddEditProjectView(taskViewModel: TaskViewModel())
+    let viewModel = TaskViewModel()
+    return AddEditProjectView(taskViewModel: viewModel)
+        .environmentObject(viewModel)
 }

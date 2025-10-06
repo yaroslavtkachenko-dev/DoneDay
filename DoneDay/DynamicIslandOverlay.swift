@@ -236,7 +236,9 @@ struct ExpandedDynamicIsland: View {
 }
 
 #Preview {
-    DynamicIslandOverlay(taskViewModel: TaskViewModel())
+    let viewModel = TaskViewModel()
+    return DynamicIslandOverlay(taskViewModel: viewModel)
+        .environmentObject(viewModel)
         .frame(width: 800, height: 100)
         .background(Color(NSColor.windowBackgroundColor))
 }

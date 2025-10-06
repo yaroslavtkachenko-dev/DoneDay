@@ -10,7 +10,7 @@ import SwiftUI
 // MARK: - Enhanced ContentView with Projects Integration
 
 struct EnhancedContentView: View {
-    @StateObject private var taskViewModel = TaskViewModel()
+    @EnvironmentObject var taskViewModel: TaskViewModel
     @State private var showingAddTask = false
     @State private var showingProjectsView = false
     @State private var showingAddProject = false
@@ -859,6 +859,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 #Preview {
     EnhancedContentView()
+        .environmentObject(TaskViewModel())
 }
 // MARK: - Enhanced Views
 

@@ -14,7 +14,7 @@ struct SplashScreenView: View {
     @State private var logoScale: CGFloat = 0.5
     @State private var logoOpacity = 0.0
     @State private var titleOpacity = 0.0
-    @StateObject private var taskViewModel = TaskViewModel()
+    @EnvironmentObject var taskViewModel: TaskViewModel
     
     var body: some View {
         ZStack {
@@ -145,4 +145,5 @@ struct SplashScreenView: View {
 
 #Preview {
     SplashScreenView()
+        .environmentObject(TaskViewModel())
 }

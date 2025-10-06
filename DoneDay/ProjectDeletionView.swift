@@ -886,8 +886,10 @@ struct IncompleteTasksPreview: View {
 }
 
 #Preview {
-    ProjectDeletionView(
+    let viewModel = TaskViewModel()
+    return ProjectDeletionView(
         project: ProjectEntity(),
-        taskViewModel: TaskViewModel()
+        taskViewModel: viewModel
     )
+    .environmentObject(viewModel)
 }
