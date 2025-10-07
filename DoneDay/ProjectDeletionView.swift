@@ -136,9 +136,9 @@ struct ProjectDeletionView: View {
         }
         
         // Delete the project
-        DataManager.shared.context.delete(project)
+        PersistenceController.shared.context.delete(project)
         
-        let saveResult = DataManager.shared.save()
+        let saveResult = PersistenceController.shared.save()
         switch saveResult {
         case .success:
             presentationMode.wrappedValue.dismiss()
@@ -570,7 +570,7 @@ struct ProjectCompletionView: View {
             project.notes = currentNotes + separator + "Завершено: " + completionNotes.trimmingCharacters(in: .whitespacesAndNewlines)
         }
         
-        let saveResult = DataManager.shared.save()
+        let saveResult = PersistenceController.shared.save()
         switch saveResult {
         case .success:
             presentationMode.wrappedValue.dismiss()

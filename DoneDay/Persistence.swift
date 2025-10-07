@@ -138,4 +138,52 @@ class PersistenceController {
             print("❌ Failed to create fallback store: \(error)")
         }
     }
+    
+    // MARK: - Core Data Operations (Merged from DataManager)
+    
+    /// Access to main view context
+    var context: NSManagedObjectContext {
+        return container.viewContext
+    }
+    
+    /// Save changes with proper error handling
+    func save() -> Result<Void, AppError> {
+        let context = container.viewContext
+        
+        guard context.hasChanges else {
+            return .success(())
+        }
+        
+        do {
+            try context.save()
+            print("✅ Core Data saved successfully")
+            return .success(())
+        } catch {
+            print("❌ Core Data save error: \(error)")
+            print("❌ Error details: \(error.localizedDescription)")
+            return .failure(.coreDataSaveFailed(error))
+        }
+    }
+    
+    /// Perform background task
+    func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
+        container.performBackgroundTask(block)
+    }
+    
+    /// Delete all data (use with caution)
+    func deleteAll() {
+        let entities = ["TaskEntity", "ProjectEntity", "AreaEntity", "TagEntity"]
+        
+        for entityName in entities {
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            
+            do {
+                try context.execute(deleteRequest)
+            } catch {
+                print("Failed to delete \(entityName): \(error)")
+            }
+        }
+        _ = save()
+    }
 }

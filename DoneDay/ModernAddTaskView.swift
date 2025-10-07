@@ -575,8 +575,8 @@ struct ModernEditTaskView: View {
         task.dueDate = hasDueDate ? dueDate : nil
         task.updatedAt = Date()
         
-        // Save through DataManager with proper error handling
-        let saveResult = DataManager.shared.save()
+        // Save through PersistenceController with proper error handling
+        let saveResult = PersistenceController.shared.save()
         switch saveResult {
         case .success:
             presentationMode.wrappedValue.dismiss()

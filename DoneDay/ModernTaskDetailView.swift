@@ -127,7 +127,7 @@ struct ModernTaskDetailView: View {
     }
     
     private func saveChanges() {
-        let saveResult = DataManager.shared.save()
+        let saveResult = PersistenceController.shared.save()
         switch saveResult {
         case .success:
             taskViewModel.loadTasks()

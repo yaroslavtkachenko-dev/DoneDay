@@ -92,9 +92,9 @@ struct ProjectsListView: View {
         }
         
         // Видалити проект
-        DataManager.shared.context.delete(project)
+        PersistenceController.shared.context.delete(project)
         
-        let saveResult = DataManager.shared.save()
+        let saveResult = PersistenceController.shared.save()
         switch saveResult {
         case .success:
             print("✅ Project deleted successfully")

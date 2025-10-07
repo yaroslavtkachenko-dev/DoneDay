@@ -449,9 +449,9 @@ struct ProjectDetailView: View {
             task.updatedAt = Date()
         }
         
-        DataManager.shared.context.delete(project)
+        PersistenceController.shared.context.delete(project)
         
-        let saveResult = DataManager.shared.save()
+        let saveResult = PersistenceController.shared.save()
         switch saveResult {
         case .success:
             presentationMode.wrappedValue.dismiss()

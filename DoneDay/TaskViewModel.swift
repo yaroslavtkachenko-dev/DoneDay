@@ -40,12 +40,98 @@ class TaskViewModel: ObservableObject {
     
     private func setupNotificationObserver() {
         NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
-            .sink { [weak self] _ in
+            .sink { [weak self] notification in
                 DispatchQueue.main.async {
-                    self?.loadAllData()
+                    self?.handleContextSave(notification: notification)
                 }
             }
             .store(in: &cancellables)
+    }
+    
+    // MARK: - Selective Data Refresh (Performance Optimization)
+    
+    private func handleContextSave(notification: Notification) {
+        guard let userInfo = notification.userInfo else {
+            return
+        }
+        
+        var shouldReloadTasks = false
+        var shouldReloadProjects = false
+        var shouldReloadAreas = false
+        var shouldReloadTags = false
+        
+        // Check inserted objects
+        if let insertedObjects = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject> {
+            for object in insertedObjects {
+                switch object {
+                case is TaskEntity:
+                    shouldReloadTasks = true
+                case is ProjectEntity:
+                    shouldReloadProjects = true
+                case is AreaEntity:
+                    shouldReloadAreas = true
+                case is TagEntity:
+                    shouldReloadTags = true
+                default:
+                    break
+                }
+            }
+        }
+        
+        // Check updated objects
+        if let updatedObjects = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject> {
+            for object in updatedObjects {
+                switch object {
+                case is TaskEntity:
+                    shouldReloadTasks = true
+                case is ProjectEntity:
+                    shouldReloadProjects = true
+                case is AreaEntity:
+                    shouldReloadAreas = true
+                case is TagEntity:
+                    shouldReloadTags = true
+                default:
+                    break
+                }
+            }
+        }
+        
+        // Check deleted objects
+        if let deletedObjects = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject> {
+            for object in deletedObjects {
+                switch object {
+                case is TaskEntity:
+                    shouldReloadTasks = true
+                case is ProjectEntity:
+                    shouldReloadProjects = true
+                case is AreaEntity:
+                    shouldReloadAreas = true
+                case is TagEntity:
+                    shouldReloadTags = true
+                default:
+                    break
+                }
+            }
+        }
+        
+        // Reload only changed data (Performance improvement)
+        if shouldReloadTasks {
+            loadTasks()
+        }
+        if shouldReloadProjects {
+            loadProjects()
+        }
+        if shouldReloadAreas {
+            loadAreas()
+        }
+        if shouldReloadTags {
+            loadTags()
+        }
+        
+        // Log for debugging
+        if shouldReloadTasks || shouldReloadProjects || shouldReloadAreas || shouldReloadTags {
+            print("🔄 Selective refresh: Tasks=\(shouldReloadTasks), Projects=\(shouldReloadProjects), Areas=\(shouldReloadAreas), Tags=\(shouldReloadTags)")
+        }
     }
     
     // MARK: - Data Loading

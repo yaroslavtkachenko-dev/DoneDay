@@ -202,17 +202,4 @@ extension Result {
 }
 
 // MARK: - Validation Helpers
-
-struct Validator {
-    static func validateProjectName(_ name: String) throws {
-        guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
-            throw AppError.projectNameEmpty
-        }
-    }
-    
-    static func validateTask(_ title: String) throws {
-        guard !title.trimmingCharacters(in: .whitespaces).isEmpty else {
-            throw AppError.taskCreationFailed(reason: "Назва завдання не може бути порожньою")
-        }
-    }
-}
+// Validator moved to ValidationService.swift for centralized validation

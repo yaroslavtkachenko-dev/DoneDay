@@ -59,7 +59,7 @@ class BaseRepository<Entity: NSManagedObject> {
 
 class TaskRepository: BaseRepository<TaskEntity> {
     
-    init(context: NSManagedObjectContext = DataManager.shared.context) {
+    init(context: NSManagedObjectContext = PersistenceController.shared.context) {
         super.init(context: context, entityName: "TaskEntity")
     }
     
@@ -222,7 +222,7 @@ class TaskRepository: BaseRepository<TaskEntity> {
 
 class ProjectRepository: BaseRepository<ProjectEntity> {
     
-    init(context: NSManagedObjectContext = DataManager.shared.context) {
+    init(context: NSManagedObjectContext = PersistenceController.shared.context) {
         super.init(context: context, entityName: "ProjectEntity")
     }
     
@@ -321,7 +321,7 @@ class ProjectRepository: BaseRepository<ProjectEntity> {
 
 class AreaRepository: BaseRepository<AreaEntity> {
     
-    init(context: NSManagedObjectContext = DataManager.shared.context) {
+    init(context: NSManagedObjectContext = PersistenceController.shared.context) {
         super.init(context: context, entityName: "AreaEntity")
     }
     
@@ -377,7 +377,7 @@ class AreaRepository: BaseRepository<AreaEntity> {
 
 class TagRepository: BaseRepository<TagEntity> {
     
-    init(context: NSManagedObjectContext = DataManager.shared.context) {
+    init(context: NSManagedObjectContext = PersistenceController.shared.context) {
         super.init(context: context, entityName: "TagEntity")
     }
     

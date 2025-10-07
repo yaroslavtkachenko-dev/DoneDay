@@ -152,7 +152,7 @@ struct AddEditProjectView: View {
             project.iconName = selectedIcon
             project.updatedAt = Date()
             
-            let saveResult = DataManager.shared.save()
+            let saveResult = PersistenceController.shared.save()
             switch saveResult {
             case .success:
                 print("✅ Project updated successfully")
