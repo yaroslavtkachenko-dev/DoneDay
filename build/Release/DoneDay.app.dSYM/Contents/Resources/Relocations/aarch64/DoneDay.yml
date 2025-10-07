@@ -1,5 +1,0 @@
----
-triple:          'arm64-apple-darwin'
-binary-path:     '/Users/yaroslavtkachenko/Desktop/DoneDay/build/Release/DoneDay.app/Contents/MacOS/DoneDay'
-relocations:     []
-...
