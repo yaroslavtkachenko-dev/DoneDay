@@ -30,6 +30,12 @@ enum AppError: LocalizedError {
     case areaUpdateFailed(reason: String)
     case areaDeletionFailed(reason: String)
     
+    // Tag Errors
+    case tagCreationFailed(reason: String)
+    case tagUpdateFailed(reason: String)
+    case tagDeletionFailed(reason: String)
+    case tagNotFound
+    
     // Data Errors
     case coreDataSaveFailed(Error)
     case coreDataFetchFailed(Error)
@@ -74,6 +80,16 @@ enum AppError: LocalizedError {
             return "Не вдалося оновити область: \(reason)"
         case .areaDeletionFailed(let reason):
             return "Не вдалося видалити область: \(reason)"
+            
+        // Tag Errors
+        case .tagCreationFailed(let reason):
+            return "Не вдалося створити тег: \(reason)"
+        case .tagUpdateFailed(let reason):
+            return "Не вдалося оновити тег: \(reason)"
+        case .tagDeletionFailed(let reason):
+            return "Не вдалося видалити тег: \(reason)"
+        case .tagNotFound:
+            return "Тег не знайдено"
             
         // Data Errors
         case .coreDataSaveFailed(let error):
@@ -131,9 +147,9 @@ class ErrorAlertManager: ObservableObject {
             self?.showingError = true
             
             // Логування помилки
-            print("❌ Error: \(error.errorDescription ?? "Unknown error")")
+            logger.error("Error: \(error.errorDescription ?? "Unknown error")", category: .general)
             if let suggestion = error.recoverySuggestion {
-                print("💡 Suggestion: \(suggestion)")
+                logger.info("Suggestion: \(suggestion)", category: .general)
             }
         }
     }

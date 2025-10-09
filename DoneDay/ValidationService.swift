@@ -161,30 +161,37 @@ class ValidationService {
     // MARK: - Batch Validation
     
     func validateTask(title: String, description: String?, dueDate: Date?, priority: Int) -> Result<(String, String?, Date?, Int), AppError> {
-        // Validate all fields
-        guard case .success(let validTitle) = validateTaskTitle(title) else {
-            if case .failure(let error) = validateTaskTitle(title) {
+        // Validate title
+        let titleResult = validateTaskTitle(title)
+        guard case .success(let validTitle) = titleResult else {
+            if case .failure(let error) = titleResult {
                 return .failure(error)
             }
             return .failure(.invalidData)
         }
         
-        guard case .success(let validDescription) = validateTaskDescription(description) else {
-            if case .failure(let error) = validateTaskDescription(description) {
+        // Validate description
+        let descriptionResult = validateTaskDescription(description)
+        guard case .success(let validDescription) = descriptionResult else {
+            if case .failure(let error) = descriptionResult {
                 return .failure(error)
             }
             return .failure(.invalidData)
         }
         
-        guard case .success(let validDueDate) = validateDueDate(dueDate) else {
-            if case .failure(let error) = validateDueDate(dueDate) {
+        // Validate due date
+        let dueDateResult = validateDueDate(dueDate)
+        guard case .success(let validDueDate) = dueDateResult else {
+            if case .failure(let error) = dueDateResult {
                 return .failure(error)
             }
             return .failure(.invalidData)
         }
         
-        guard case .success(let validPriority) = validatePriority(priority) else {
-            if case .failure(let error) = validatePriority(priority) {
+        // Validate priority
+        let priorityResult = validatePriority(priority)
+        guard case .success(let validPriority) = priorityResult else {
+            if case .failure(let error) = priorityResult {
                 return .failure(error)
             }
             return .failure(.invalidData)

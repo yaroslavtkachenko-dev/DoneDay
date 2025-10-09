@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import OSLog
 
 class PersistenceController {
     static let shared = PersistenceController()
@@ -85,8 +86,8 @@ class PersistenceController {
                 loadFailed = true
                 capturedError = error
                 
-                print("❌ Core Data load error: \(error)")
-                print("❌ Error details: \(error.userInfo)")
+                logger.error("Core Data load error: \(error.localizedDescription)", category: .coreData)
+                logger.error("Error details: \(error.userInfo)", category: .coreData)
                 
                 // Handle the error gracefully through ErrorAlertManager
                 DispatchQueue.main.async {
@@ -105,7 +106,7 @@ class PersistenceController {
                  Check the error message to determine what the actual problem was.
                  */
             } else {
-                print("✅ Core Data store loaded successfully")
+                logger.success("Core Data store loaded successfully", category: .coreData)
             }
         })
         
@@ -118,7 +119,7 @@ class PersistenceController {
     // MARK: - Graceful Degradation
     
     private func setupFallbackStore() {
-        print("🔄 Setting up fallback in-memory store...")
+        logger.warning("Setting up fallback in-memory store...", category: .coreData)
         
         // Create a new in-memory store as fallback
         let description = NSPersistentStoreDescription()
@@ -132,10 +133,10 @@ class PersistenceController {
                 at: nil,
                 options: nil
             )
-            print("✅ Fallback in-memory store created successfully")
-            print("⚠️ Data will not be persisted - this is a temporary solution")
+            logger.success("Fallback in-memory store created successfully", category: .coreData)
+            logger.warning("Data will not be persisted - this is a temporary solution", category: .coreData)
         } catch {
-            print("❌ Failed to create fallback store: \(error)")
+            logger.error("Failed to create fallback store: \(error.localizedDescription)", category: .coreData)
         }
     }
     
@@ -156,11 +157,10 @@ class PersistenceController {
         
         do {
             try context.save()
-            print("✅ Core Data saved successfully")
+            logger.logCoreDataSave(success: true)
             return .success(())
         } catch {
-            print("❌ Core Data save error: \(error)")
-            print("❌ Error details: \(error.localizedDescription)")
+            logger.error("Core Data save error: \(error.localizedDescription)", category: .coreData)
             return .failure(.coreDataSaveFailed(error))
         }
     }
@@ -181,7 +181,7 @@ class PersistenceController {
             do {
                 try context.execute(deleteRequest)
             } catch {
-                print("Failed to delete \(entityName): \(error)")
+                logger.error("Failed to delete \(entityName): \(error.localizedDescription)", category: .coreData)
             }
         }
         _ = save()

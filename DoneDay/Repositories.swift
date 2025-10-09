@@ -397,7 +397,7 @@ class TagRepository: BaseRepository<TagEntity> {
         case .success:
             return .success(tag)
         case .failure(let error):
-            return .failure(.areaCreationFailed(reason: error.localizedDescription))
+            return .failure(.tagCreationFailed(reason: error.localizedDescription))
         }
     }
     
@@ -436,7 +436,7 @@ class TagRepository: BaseRepository<TagEntity> {
         case .success:
             return .success(())
         case .failure:
-            return .failure(.areaDeletionFailed(reason: "Не вдалося видалити тег"))
+            return .failure(.tagDeletionFailed(reason: "Не вдалося видалити тег"))
         }
     }
 }

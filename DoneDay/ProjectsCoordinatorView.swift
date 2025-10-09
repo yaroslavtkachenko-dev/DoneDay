@@ -90,6 +90,12 @@ struct ProjectsOverviewTab: View {
     let onShowAllProjects: () -> Void
     let onAddProject: () -> Void
     
+    // State для модальних вікон
+    @State private var showingTodayTasks = false
+    @State private var showingCompletedTasks = false
+    @State private var showingUpcomingTasks = false
+    @State private var showingStreakDetails = false
+    
     private var analytics: ProjectAnalytics {
         ProjectAnalytics(projects: taskViewModel.projects)
     }
@@ -110,19 +116,15 @@ struct ProjectsOverviewTab: View {
                     onStatTap: { statType in
                         switch statType {
                         case .today:
-                            // TODO: Відкрити завдання на сьогодні
-                            print("Показати завдання на сьогодні")
+                            showingTodayTasks = true
                         case .completed:
-                            // TODO: Показати виконані
-                            print("Показати виконані")
+                            showingCompletedTasks = true
                         case .inProgress:
                             onShowAllProjects()
                         case .upcoming:
-                            // TODO: Показати майбутні
-                            print("Показати майбутні")
+                            showingUpcomingTasks = true
                         case .streak:
-                            // TODO: Показати статистику streak
-                            print("Streak деталі")
+                            showingStreakDetails = true
                         }
                     }
                 )
@@ -153,6 +155,30 @@ struct ProjectsOverviewTab: View {
         }
         .background(Color(NSColor.controlBackgroundColor))
         .navigationTitle("Проекти")
+        .sheet(isPresented: $showingTodayTasks) {
+            TasksListSheet(
+                title: "Завдання на сьогодні",
+                tasks: taskViewModel.getTodayTasks(),
+                taskViewModel: taskViewModel
+            )
+        }
+        .sheet(isPresented: $showingCompletedTasks) {
+            TasksListSheet(
+                title: "Виконані завдання",
+                tasks: taskViewModel.getCompletedTasks(),
+                taskViewModel: taskViewModel
+            )
+        }
+        .sheet(isPresented: $showingUpcomingTasks) {
+            TasksListSheet(
+                title: "Наближаються",
+                tasks: taskViewModel.getUpcomingTasks(),
+                taskViewModel: taskViewModel
+            )
+        }
+        .sheet(isPresented: $showingStreakDetails) {
+            StreakDetailsSheet(taskViewModel: taskViewModel)
+        }
     }
 }
 
@@ -1403,6 +1429,242 @@ struct SettingsActionRow: View {
             .padding(.vertical, 4)
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Tasks List Sheet
+
+struct TasksListSheet: View {
+    let title: String
+    let tasks: [TaskEntity]
+    @ObservedObject var taskViewModel: TaskViewModel
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                if tasks.isEmpty {
+                    ContentUnavailableView(
+                        "Немає завдань",
+                        systemImage: "checkmark.circle",
+                        description: Text("У цій категорії немає завдань")
+                    )
+                } else {
+                    ForEach(tasks, id: \.objectID) { task in
+                        TaskRowView(task: task, taskViewModel: taskViewModel)
+                    }
+                }
+            }
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Закрити") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 500, minHeight: 400)
+    }
+}
+
+struct TaskRowView: View {
+    let task: TaskEntity
+    @ObservedObject var taskViewModel: TaskViewModel
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: {
+                taskViewModel.toggleTaskCompletion(task)
+            }) {
+                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(task.isCompleted ? .green : .gray)
+                    .font(.title3)
+            }
+            .buttonStyle(.plain)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(task.title ?? "Без назви")
+                    .font(.subheadline)
+                    .strikethrough(task.isCompleted)
+                    .foregroundColor(task.isCompleted ? .secondary : .primary)
+                
+                if let project = task.project {
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(project.colorValue)
+                            .frame(width: 8, height: 8)
+                        Text(project.name ?? "")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            if let dueDate = task.dueDate {
+                let isOverdue = dueDate < Date() && !task.isCompleted
+                Text(dueDate, style: .date)
+                    .font(.caption)
+                    .foregroundColor(isOverdue ? .red : .secondary)
+            }
+            
+            if task.priority > 0 {
+                HStack(spacing: 2) {
+                    ForEach(0..<Int(task.priority), id: \.self) { _ in
+                        Image(systemName: "exclamationmark")
+                            .font(.caption2)
+                            .foregroundColor(.orange)
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Streak Details Sheet
+
+struct StreakDetailsSheet: View {
+    @ObservedObject var taskViewModel: TaskViewModel
+    @Environment(\.dismiss) private var dismiss
+    
+    private var streakDays: Int {
+        let calendar = Calendar.current
+        var currentDate = Date()
+        var streak = 0
+        
+        for _ in 0..<30 {
+            let dayStart = calendar.startOfDay(for: currentDate)
+            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
+            
+            let hasCompletedTasks = taskViewModel.tasks.contains { task in
+                guard task.isCompleted && !task.isDelete else { return false }
+                if let completedDate = task.completedAt {
+                    return completedDate >= dayStart && completedDate < dayEnd
+                }
+                return false
+            }
+            
+            if hasCompletedTasks {
+                streak += 1
+                currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
+            } else {
+                break
+            }
+        }
+        
+        return streak
+    }
+    
+    private var completionHistory: [(date: Date, count: Int)] {
+        let calendar = Calendar.current
+        var history: [(date: Date, count: Int)] = []
+        
+        for i in 0..<7 {
+            let date = calendar.date(byAdding: .day, value: -i, to: Date())!
+            let dayStart = calendar.startOfDay(for: date)
+            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
+            
+            let count = taskViewModel.tasks.filter { task in
+                guard task.isCompleted && !task.isDelete else { return false }
+                if let completedDate = task.completedAt {
+                    return completedDate >= dayStart && completedDate < dayEnd
+                }
+                return false
+            }.count
+            
+            history.append((date: dayStart, count: count))
+        }
+        
+        return history.reversed()
+    }
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Streak Header
+                    VStack(spacing: 12) {
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.orange)
+                        
+                        Text("\(streakDays)")
+                            .font(.system(size: 72, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                        
+                        Text(streakDays == 1 ? "день поспіль" : (streakDays < 5 ? "дні поспіль" : "днів поспіль"))
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 40)
+                    
+                    // Completion History
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Останні 7 днів")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                        
+                        VStack(spacing: 12) {
+                            ForEach(completionHistory, id: \.date) { item in
+                                HStack {
+                                    Text(item.date, style: .date)
+                                        .font(.subheadline)
+                                        .frame(width: 120, alignment: .leading)
+                                    
+                                    ProgressView(value: Double(item.count), total: 10)
+                                        .tint(item.count > 0 ? .green : .gray)
+                                    
+                                    Text("\(item.count)")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                        .frame(width: 30, alignment: .trailing)
+                                }
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(.regularMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    
+                    // Motivational Message
+                    VStack(spacing: 12) {
+                        if streakDays > 0 {
+                            Text("Чудова робота! 🎉")
+                                .font(.headline)
+                            Text("Ви виконуєте завдання \(streakDays) \(streakDays == 1 ? "день" : (streakDays < 5 ? "дні" : "днів")) поспіль")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                        } else {
+                            Text("Почніть свою серію! 💪")
+                                .font(.headline)
+                            Text("Виконайте хоча б одне завдання сьогодні")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .padding(20)
+                    .background(.blue.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    
+                    Spacer()
+                }
+                .padding(20)
+            }
+            .navigationTitle("Статистика продуктивності")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Закрити") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 600, minHeight: 500)
     }
 }
 

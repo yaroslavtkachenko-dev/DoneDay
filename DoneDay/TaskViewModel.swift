@@ -130,7 +130,7 @@ class TaskViewModel: ObservableObject {
         
         // Log for debugging
         if shouldReloadTasks || shouldReloadProjects || shouldReloadAreas || shouldReloadTags {
-            print("🔄 Selective refresh: Tasks=\(shouldReloadTasks), Projects=\(shouldReloadProjects), Areas=\(shouldReloadAreas), Tags=\(shouldReloadTags)")
+            logger.debug("Selective refresh: Tasks=\(shouldReloadTasks), Projects=\(shouldReloadProjects), Areas=\(shouldReloadAreas), Tags=\(shouldReloadTags)", category: .viewModel)
         }
     }
     
@@ -202,7 +202,7 @@ class TaskViewModel: ObservableObject {
         
         switch result {
         case .success(let task):
-            print("✅ Task created: \(task.title ?? "")")
+            logger.success("Task created: \(task.title ?? "")", category: .viewModel)
             loadTasks()
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
@@ -308,7 +308,7 @@ class TaskViewModel: ObservableObject {
         
         switch result {
         case .success(let project):
-            print("✅ Project created: \(project.name ?? "")")
+            logger.success("Project created: \(project.name ?? "")", category: .viewModel)
             loadProjects()
             return project
         case .failure(let error):
