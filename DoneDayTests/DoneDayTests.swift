@@ -43,11 +43,11 @@ class DoneDayTestCase: XCTestCase {
 
 class TaskRepositoryTests: DoneDayTestCase {
     
-    var repository: ImprovedTaskRepository!
+    var repository: TaskRepository!
     
     override func setUpWithError() throws {
         try super.setUpWithError()
-        repository = ImprovedTaskRepository(context: testContext)
+        repository = TaskRepository(context: testContext)
     }
     
     func testCreateTask_Success() {
@@ -181,11 +181,11 @@ class TaskRepositoryTests: DoneDayTestCase {
 
 class ProjectRepositoryTests: DoneDayTestCase {
     
-    var repository: ImprovedProjectRepository!
+    var repository: ProjectRepository!
     
     override func setUpWithError() throws {
         try super.setUpWithError()
-        repository = ImprovedProjectRepository(context: testContext)
+        repository = ProjectRepository(context: testContext)
     }
     
     func testCreateProject_Success() {
@@ -275,35 +275,77 @@ class ProjectRepositoryTests: DoneDayTestCase {
     }
 }
 
-// MARK: - Validator Tests
+// MARK: - ValidationService Tests
 
-class ValidatorTests: XCTestCase {
+class ValidationServiceTests: XCTestCase {
     
     func testValidateProjectName_ValidName() {
-        XCTAssertNoThrow(try Validator.validateProjectName("Valid Project"))
+        let result = ValidationService.shared.validateProjectName("Valid Project")
+        switch result {
+        case .success(let validatedName):
+            XCTAssertEqual(validatedName, "Valid Project")
+        case .failure(let error):
+            XCTFail("Expected success but got error: \(error)")
+        }
     }
     
-    func testValidateProjectName_EmptyName_ThrowsError() {
-        XCTAssertThrowsError(try Validator.validateProjectName("")) { error in
-            XCTAssertTrue(error is AppError)
-            if case .projectNameEmpty = error as? AppError {
-                // Success
+    func testValidateProjectName_EmptyName_Failure() {
+        let result = ValidationService.shared.validateProjectName("")
+        switch result {
+        case .success:
+            XCTFail("Expected failure for empty name")
+        case .failure(let error):
+            if case .projectNameEmpty = error {
+                // Success - correct error type
             } else {
-                XCTFail("Wrong error type")
+                XCTFail("Wrong error type: \(error)")
             }
         }
     }
     
-    func testValidateProjectName_WhitespaceName_ThrowsError() {
-        XCTAssertThrowsError(try Validator.validateProjectName("   "))
+    func testValidateProjectName_WhitespaceName_Failure() {
+        let result = ValidationService.shared.validateProjectName("   ")
+        switch result {
+        case .success:
+            XCTFail("Expected failure for whitespace name")
+        case .failure(let error):
+            if case .projectNameEmpty = error {
+                // Success - correct error type
+            } else {
+                XCTFail("Wrong error type: \(error)")
+            }
+        }
     }
     
-    func testValidateTask_ValidTitle() {
-        XCTAssertNoThrow(try Validator.validateTask("Valid Task"))
+    func testValidateTaskTitle_ValidTitle() {
+        let result = ValidationService.shared.validateTaskTitle("Valid Task")
+        switch result {
+        case .success(let validatedTitle):
+            XCTAssertEqual(validatedTitle, "Valid Task")
+        case .failure(let error):
+            XCTFail("Expected success but got error: \(error)")
+        }
     }
     
-    func testValidateTask_EmptyTitle_ThrowsError() {
-        XCTAssertThrowsError(try Validator.validateTask(""))
+    func testValidateTaskTitle_EmptyTitle_Failure() {
+        let result = ValidationService.shared.validateTaskTitle("")
+        switch result {
+        case .success:
+            XCTFail("Expected failure for empty title")
+        case .failure(let error):
+            XCTAssertTrue(error.errorDescription?.contains("назва") ?? false)
+        }
+    }
+    
+    func testValidateTaskTitle_TooLongTitle_Failure() {
+        let longTitle = String(repeating: "a", count: 201) // Exceeds maxTitleLength
+        let result = ValidationService.shared.validateTaskTitle(longTitle)
+        switch result {
+        case .success:
+            XCTFail("Expected failure for too long title")
+        case .failure(let error):
+            XCTAssertTrue(error.errorDescription?.contains("довга") ?? false)
+        }
     }
 }
 
@@ -323,7 +365,7 @@ class TaskViewModelIntegrationTests: DoneDayTestCase {
         let initialCount = viewModel.tasks.count
         
         // When
-        viewModel.addTaskWithErrorHandling(title: "Integration Test Task")
+        viewModel.addTask(title: "Integration Test Task")
         
         // Then
         XCTAssertEqual(viewModel.tasks.count, initialCount + 1)
@@ -334,7 +376,7 @@ class TaskViewModelIntegrationTests: DoneDayTestCase {
         let initialCount = viewModel.projects.count
         
         // When
-        viewModel.addProjectWithErrorHandling(
+        _ = viewModel.addProject(
             name: "Integration Test Project",
             color: "blue"
         )
@@ -350,7 +392,7 @@ class PerformanceTests: DoneDayTestCase {
     
     func testFetchPerformance() {
         // Given - створюємо 1000 завдань
-        let repository = ImprovedTaskRepository(context: testContext)
+        let repository = TaskRepository(context: testContext)
         for i in 1...1000 {
             _ = repository.createTask(title: "Task \(i)")
         }
@@ -362,7 +404,7 @@ class PerformanceTests: DoneDayTestCase {
     }
     
     func testCreateTaskPerformance() {
-        let repository = ImprovedTaskRepository(context: testContext)
+        let repository = TaskRepository(context: testContext)
         
         measure {
             for i in 1...100 {

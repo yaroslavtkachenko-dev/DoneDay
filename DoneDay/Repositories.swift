@@ -70,33 +70,31 @@ class TaskRepository: BaseRepository<TaskEntity> {
         project: ProjectEntity? = nil
     ) -> Result<TaskEntity, AppError> {
         // Валідація
-        do {
-            try Validator.validateTask(title)
-        } catch let error as AppError {
-            return .failure(error)
-        } catch {
-            return .failure(.taskCreationFailed(reason: error.localizedDescription))
-        }
-        
-        // Створення
-        let task = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! TaskEntity
-        task.id = UUID()
-        task.title = title
-        task.notes = description
-        task.createdAt = Date()
-        task.updatedAt = Date()
-        task.isCompleted = false
-        task.area = area
-        task.project = project
-        task.sortOrder = Int32(Date().timeIntervalSince1970)
-        
-        // Збереження
-        let saveResult = save()
-        switch saveResult {
-        case .success:
-            return .success(task)
+        let validationResult = ValidationService.shared.validateTaskTitle(title)
+        switch validationResult {
+        case .success(let validTitle):
+            // Створення
+            let task = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! TaskEntity
+            task.id = UUID()
+            task.title = validTitle
+            task.notes = description
+            task.createdAt = Date()
+            task.updatedAt = Date()
+            task.isCompleted = false
+            task.area = area
+            task.project = project
+            task.sortOrder = Int32(Date().timeIntervalSince1970)
+            
+            // Збереження
+            let saveResult = save()
+            switch saveResult {
+            case .success:
+                return .success(task)
+            case .failure(let error):
+                return .failure(.taskCreationFailed(reason: error.localizedDescription))
+            }
         case .failure(let error):
-            return .failure(.taskCreationFailed(reason: error.localizedDescription))
+            return .failure(error)
         }
     }
     
@@ -108,18 +106,19 @@ class TaskRepository: BaseRepository<TaskEntity> {
         area: AreaEntity? = nil
     ) -> Result<TaskEntity, AppError> {
         // Валідація якщо змінюється title
+        var validTitle: String?
         if let newTitle = title {
-            do {
-                try Validator.validateTask(newTitle)
-            } catch let error as AppError {
+            let validationResult = ValidationService.shared.validateTaskTitle(newTitle)
+            switch validationResult {
+            case .success(let validatedTitle):
+                validTitle = validatedTitle
+            case .failure(let error):
                 return .failure(error)
-            } catch {
-                return .failure(.taskUpdateFailed(reason: error.localizedDescription))
             }
         }
         
         // Оновлення
-        if let title = title { task.title = title }
+        if let validTitle = validTitle { task.title = validTitle }
         if let description = description { task.notes = description }
         task.project = project
         task.area = area
@@ -234,33 +233,31 @@ class ProjectRepository: BaseRepository<ProjectEntity> {
         iconName: String? = nil
     ) -> Result<ProjectEntity, AppError> {
         // Валідація
-        do {
-            try Validator.validateProjectName(name)
-        } catch let error as AppError {
-            return .failure(error)
-        } catch {
-            return .failure(.projectCreationFailed(reason: error.localizedDescription))
-        }
-        
-        // Створення
-        let project = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! ProjectEntity
-        project.id = UUID()
-        project.name = name
-        project.notes = notes
-        project.createdAt = Date()
-        project.updatedAt = Date()
-        project.isCompleted = false
-        project.area = area
-        project.color = color ?? "blue"
-        project.iconName = iconName ?? "folder.fill"
-        
-        // Збереження
-        let saveResult = save()
-        switch saveResult {
-        case .success:
-            return .success(project)
+        let validationResult = ValidationService.shared.validateProjectName(name)
+        switch validationResult {
+        case .success(let validName):
+            // Створення
+            let project = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! ProjectEntity
+            project.id = UUID()
+            project.name = validName
+            project.notes = notes
+            project.createdAt = Date()
+            project.updatedAt = Date()
+            project.isCompleted = false
+            project.area = area
+            project.color = color ?? "blue"
+            project.iconName = iconName ?? "folder.fill"
+            
+            // Збереження
+            let saveResult = save()
+            switch saveResult {
+            case .success:
+                return .success(project)
+            case .failure(let error):
+                return .failure(.projectCreationFailed(reason: error.localizedDescription))
+            }
         case .failure(let error):
-            return .failure(.projectCreationFailed(reason: error.localizedDescription))
+            return .failure(error)
         }
     }
     
@@ -273,18 +270,19 @@ class ProjectRepository: BaseRepository<ProjectEntity> {
         iconName: String? = nil
     ) -> Result<ProjectEntity, AppError> {
         // Валідація якщо змінюється назва
+        var validName: String?
         if let newName = name {
-            do {
-                try Validator.validateProjectName(newName)
-            } catch let error as AppError {
+            let validationResult = ValidationService.shared.validateProjectName(newName)
+            switch validationResult {
+            case .success(let validatedName):
+                validName = validatedName
+            case .failure(let error):
                 return .failure(error)
-            } catch {
-                return .failure(.projectUpdateFailed(reason: error.localizedDescription))
             }
         }
         
         // Оновлення
-        if let name = name { project.name = name }
+        if let validName = validName { project.name = validName }
         if let notes = notes { project.notes = notes }
         if let area = area { project.area = area }
         if let color = color { project.color = color }

@@ -1119,9 +1119,6 @@ struct ProjectsSettingsTab: View {
                 // Data Management
                 DataManagementSection(taskViewModel: taskViewModel)
                 
-                // Import/Export
-                ImportExportSection()
-                
                 Spacer(minLength: 100)
             }
             .padding(20)
@@ -1319,47 +1316,6 @@ struct DataManagementSection: View {
         for project in completedProjects {
             taskViewModel.deleteProject(project, deletionOption: .moveToInbox)
         }
-    }
-}
-
-struct ImportExportSection: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Імпорт/Експорт")
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            VStack(spacing: 12) {
-                SettingsActionRow(
-                    icon: "square.and.arrow.up",
-                    title: "Експортувати проекти",
-                    subtitle: "Експортувати всі проекти в JSON файл",
-                    color: .blue,
-                    action: { exportProjects() }
-                )
-                
-                SettingsActionRow(
-                    icon: "square.and.arrow.down",
-                    title: "Імпортувати проекти",
-                    subtitle: "Імпортувати проекти з JSON файлу",
-                    color: .green,
-                    action: { importProjects() }
-                )
-            }
-        }
-        .padding(20)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-    }
-    
-    private func exportProjects() {
-        // Implementation for export
-        print("Exporting projects...")
-    }
-    
-    private func importProjects() {
-        // Implementation for import
-        print("Importing projects...")
     }
 }
 
