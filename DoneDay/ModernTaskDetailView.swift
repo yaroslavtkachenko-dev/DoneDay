@@ -96,15 +96,21 @@ struct ModernTaskDetailView: View {
     // MARK: - Save Functions
     
     private func saveTitle() {
-        task.title = editedTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        task.updatedAt = Date()
-        saveChanges()
+        let trimmedTitle = editedTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        let result = taskViewModel.taskRepository.updateTask(
+            task,
+            title: trimmedTitle
+        )
+        handleSaveResult(result)
     }
     
     private func saveNotes() {
-        task.notes = editedNotes.trimmingCharacters(in: .whitespacesAndNewlines)
-        task.updatedAt = Date()
-        saveChanges()
+        let trimmedNotes = editedNotes.trimmingCharacters(in: .whitespacesAndNewlines)
+        let result = taskViewModel.taskRepository.updateTask(
+            task,
+            description: trimmedNotes
+        )
+        handleSaveResult(result)
     }
     
     private func savePriority() {
@@ -120,15 +126,26 @@ struct ModernTaskDetailView: View {
     }
     
     private func saveOrganization() {
-        task.project = selectedProject
-        task.area = selectedArea
-        task.updatedAt = Date()
-        saveChanges()
+        let result = taskViewModel.taskRepository.updateTask(
+            task,
+            project: selectedProject,
+            area: selectedArea
+        )
+        handleSaveResult(result)
     }
     
     private func saveChanges() {
         let saveResult = PersistenceController.shared.save()
         switch saveResult {
+        case .success:
+            taskViewModel.loadTasks()
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+        }
+    }
+    
+    private func handleSaveResult(_ result: Result<TaskEntity, AppError>) {
+        switch result {
         case .success:
             taskViewModel.loadTasks()
         case .failure(let error):

@@ -145,6 +145,10 @@ struct ContentView: View {
     }
     
     private func deleteTask(_ task: TaskEntity) {
+        // Обнуляємо selectedTask якщо видаляємо обране завдання
+        if selectedTask?.objectID == task.objectID {
+            selectedTask = nil
+        }
         taskViewModel.deleteTask(task)
         taskToDelete = nil
     }

@@ -251,7 +251,7 @@ struct ProjectsQuickStats: View {
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
         
         return taskViewModel.tasks.filter { task in
-            guard !task.isCompleted && !task.isDelete else { return false }
+            guard !task.isCompleted else { return false }
             if let dueDate = task.dueDate {
                 return dueDate >= today && dueDate < tomorrow
             }
@@ -262,7 +262,7 @@ struct ProjectsQuickStats: View {
     private var completedTodayCount: Int {
         let today = Calendar.current.startOfDay(for: Date())
         return taskViewModel.tasks.filter { task in
-            guard task.isCompleted && !task.isDelete else { return false }
+            guard task.isCompleted else { return false }
             if let completedDate = task.completedAt {
                 return Calendar.current.isDate(completedDate, inSameDayAs: today)
             }
@@ -279,7 +279,7 @@ struct ProjectsQuickStats: View {
         let nextWeek = Calendar.current.date(byAdding: .day, value: 7, to: Date())!
         
         return taskViewModel.tasks.filter { task in
-            guard !task.isCompleted && !task.isDelete else { return false }
+            guard !task.isCompleted else { return false }
             if let dueDate = task.dueDate {
                 return dueDate >= tomorrow && dueDate < nextWeek
             }
@@ -289,15 +289,18 @@ struct ProjectsQuickStats: View {
     
     private var streakDays: Int {
         let calendar = Calendar.current
-        var currentDate = Date()
+        let today = calendar.startOfDay(for: Date())
+        var currentDate = today
         var streak = 0
+        var checkingToday = true
         
+        // Перевіряємо до 30 днів назад
         for _ in 0..<30 {
             let dayStart = calendar.startOfDay(for: currentDate)
             let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
             
             let hasCompletedTasks = taskViewModel.tasks.contains { task in
-                guard task.isCompleted && !task.isDelete else { return false }
+                guard task.isCompleted else { return false }
                 if let completedDate = task.completedAt {
                     return completedDate >= dayStart && completedDate < dayEnd
                 }
@@ -307,7 +310,14 @@ struct ProjectsQuickStats: View {
             if hasCompletedTasks {
                 streak += 1
                 currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
+                checkingToday = false
             } else {
+                // Якщо сьогодні немає завершених завдань, дозволяємо один пропуск
+                if checkingToday {
+                    checkingToday = false
+                    currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
+                    continue
+                }
                 break
             }
         }
@@ -1488,15 +1498,18 @@ struct StreakDetailsSheet: View {
     
     private var streakDays: Int {
         let calendar = Calendar.current
-        var currentDate = Date()
+        let today = calendar.startOfDay(for: Date())
+        var currentDate = today
         var streak = 0
+        var checkingToday = true
         
+        // Перевіряємо до 30 днів назад
         for _ in 0..<30 {
             let dayStart = calendar.startOfDay(for: currentDate)
             let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
             
             let hasCompletedTasks = taskViewModel.tasks.contains { task in
-                guard task.isCompleted && !task.isDelete else { return false }
+                guard task.isCompleted else { return false }
                 if let completedDate = task.completedAt {
                     return completedDate >= dayStart && completedDate < dayEnd
                 }
@@ -1506,7 +1519,14 @@ struct StreakDetailsSheet: View {
             if hasCompletedTasks {
                 streak += 1
                 currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
+                checkingToday = false
             } else {
+                // Якщо сьогодні немає завершених завдань, дозволяємо один пропуск
+                if checkingToday {
+                    checkingToday = false
+                    currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
+                    continue
+                }
                 break
             }
         }
@@ -1524,7 +1544,7 @@ struct StreakDetailsSheet: View {
             let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
             
             let count = taskViewModel.tasks.filter { task in
-                guard task.isCompleted && !task.isDelete else { return false }
+                guard task.isCompleted else { return false }
                 if let completedDate = task.completedAt {
                     return completedDate >= dayStart && completedDate < dayEnd
                 }

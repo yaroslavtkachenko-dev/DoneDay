@@ -74,7 +74,9 @@ class TaskRepository: BaseRepository<TaskEntity> {
         switch validationResult {
         case .success(let validTitle):
             // Створення
-            let task = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! TaskEntity
+            guard let task = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as? TaskEntity else {
+                return .failure(.taskCreationFailed(reason: "Не вдалося створити об'єкт TaskEntity"))
+            }
             task.id = UUID()
             task.title = validTitle
             task.notes = description
@@ -169,7 +171,7 @@ class TaskRepository: BaseRepository<TaskEntity> {
         let today = Calendar.current.startOfDay(for: Date())
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
         
-        let predicate = NSPredicate(format: "dueDate >= %@ AND dueDate < %@ AND isCompleted == false AND isDelete == NO", today as NSDate, tomorrow as NSDate)
+        let predicate = NSPredicate(format: "dueDate >= %@ AND dueDate < %@ AND isCompleted == false", today as NSDate, tomorrow as NSDate)
         return fetch(predicate: predicate)
     }
     
@@ -177,17 +179,17 @@ class TaskRepository: BaseRepository<TaskEntity> {
         let today = Date()
         let futureDate = Calendar.current.date(byAdding: .day, value: days, to: today)!
         
-        let predicate = NSPredicate(format: "dueDate > %@ AND dueDate <= %@ AND isCompleted == false AND isDelete == NO", today as NSDate, futureDate as NSDate)
+        let predicate = NSPredicate(format: "dueDate > %@ AND dueDate <= %@ AND isCompleted == false", today as NSDate, futureDate as NSDate)
         return fetch(predicate: predicate)
     }
     
     func fetchInboxTasks() -> Result<[TaskEntity], AppError> {
-        let predicate = NSPredicate(format: "area == nil AND project == nil AND isCompleted == false AND isDelete == NO")
+        let predicate = NSPredicate(format: "area == nil AND project == nil AND isCompleted == false")
         return fetch(predicate: predicate)
     }
     
     func fetchCompletedTasks() -> Result<[TaskEntity], AppError> {
-        let predicate = NSPredicate(format: "isCompleted == true AND isDelete == NO")
+        let predicate = NSPredicate(format: "isCompleted == true")
         let sortByCompletedDate = [NSSortDescriptor(key: "completedAt", ascending: false)]
         
         let request = NSFetchRequest<TaskEntity>(entityName: entityName)
@@ -237,7 +239,9 @@ class ProjectRepository: BaseRepository<ProjectEntity> {
         switch validationResult {
         case .success(let validName):
             // Створення
-            let project = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! ProjectEntity
+            guard let project = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as? ProjectEntity else {
+                return .failure(.projectCreationFailed(reason: "Не вдалося створити об'єкт ProjectEntity"))
+            }
             project.id = UUID()
             project.name = validName
             project.notes = notes
@@ -329,7 +333,9 @@ class AreaRepository: BaseRepository<AreaEntity> {
         iconName: String? = nil,
         color: String? = nil
     ) -> Result<AreaEntity, AppError> {
-        let area = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! AreaEntity
+        guard let area = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as? AreaEntity else {
+            return .failure(.areaCreationFailed(reason: "Не вдалося створити об'єкт AreaEntity"))
+        }
         area.id = UUID()
         area.name = name
         area.notes = notes
@@ -383,7 +389,9 @@ class TagRepository: BaseRepository<TagEntity> {
         name: String,
         color: String? = nil
     ) -> Result<TagEntity, AppError> {
-        let tag = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! TagEntity
+        guard let tag = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as? TagEntity else {
+            return .failure(.tagCreationFailed(reason: "Не вдалося створити об'єкт TagEntity"))
+        }
         tag.id = UUID()
         tag.name = name
         tag.color = color

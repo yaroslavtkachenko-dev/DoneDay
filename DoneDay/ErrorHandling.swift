@@ -139,17 +139,21 @@ class ErrorAlertManager: ObservableObject {
     
     static let shared = ErrorAlertManager()
     
+    private let queue = DispatchQueue(label: "com.doneday.errormanager", attributes: .concurrent)
+    
     private init() {}
     
     func handle(_ error: AppError) {
-        DispatchQueue.main.async { [weak self] in
-            self?.currentError = error
-            self?.showingError = true
-            
-            // Логування помилки
-            logger.error("Error: \(error.errorDescription ?? "Unknown error")", category: .general)
-            if let suggestion = error.recoverySuggestion {
-                logger.info("Suggestion: \(suggestion)", category: .general)
+        queue.async(flags: .barrier) { [weak self] in
+            DispatchQueue.main.async {
+                self?.currentError = error
+                self?.showingError = true
+                
+                // Логування помилки
+                logger.error("Error: \(error.errorDescription ?? "Unknown error")", category: .general)
+                if let suggestion = error.recoverySuggestion {
+                    logger.info("Suggestion: \(suggestion)", category: .general)
+                }
             }
         }
     }
@@ -163,8 +167,12 @@ class ErrorAlertManager: ObservableObject {
     }
     
     func clearError() {
-        currentError = nil
-        showingError = false
+        queue.async(flags: .barrier) { [weak self] in
+            DispatchQueue.main.async {
+                self?.currentError = nil
+                self?.showingError = false
+            }
+        }
     }
 }
 

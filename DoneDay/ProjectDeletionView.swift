@@ -130,8 +130,7 @@ struct ProjectDeletionView: View {
             
         case .deleteTasks:
             for task in projectTasks {
-                task.isDelete = true
-                task.updatedAt = Date()
+                PersistenceController.shared.context.delete(task)
             }
         }
         
