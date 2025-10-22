@@ -1,6 +1,6 @@
 //
 //  ProjectsListView.swift
-//  DoneDay
+//  DoneDay - Список проектів з пошуком та фільтрами
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //

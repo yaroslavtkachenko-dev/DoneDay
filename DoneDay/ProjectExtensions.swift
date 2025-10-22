@@ -1,6 +1,6 @@
 //
 //  ProjectExtensions.swift
-//  DoneDay
+//  DoneDay - Розширення для роботи з проектами
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //

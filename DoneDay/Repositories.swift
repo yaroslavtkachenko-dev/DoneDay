@@ -1,6 +1,6 @@
 //
 //  Repositories.swift
-//  DoneDay - Repository Pattern з Result<Success, Error>
+//  DoneDay - Репозиторії для роботи з даними (Core Data)
 //
 //  Created by Yaroslav Tkachenko on 02.10.2025.
 //
@@ -9,6 +9,8 @@ import CoreData
 import Foundation
 
 // MARK: - Base Repository з Result<Success, Error>
+// Repository Pattern - архітектурний патерн для роботи з даними
+// Використовує Result<Success, Error> для безпечної обробки помилок
 
 class BaseRepository<Entity: NSManagedObject> {
     let context: NSManagedObjectContext

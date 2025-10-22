@@ -1,6 +1,6 @@
 //
 //  ViewExtensions.swift
-//  DoneDay - ВИПРАВЛЕНА ВЕРСІЯ З ПРАВИЛЬНОЮ АДАПТИВНІСТЮ
+//  DoneDay - Адаптивні розширення для SwiftUI компонентів
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //
@@ -197,8 +197,8 @@ struct AdaptiveScreenPaddingModifier: ViewModifier {
 
 extension View {
     func adaptiveSpacing() -> CGFloat {
-        // Це потрібно використовувати в VStack/HStack
-        return 16 // Default, буде перевизначено через environment
+        // Повертає адаптивний відступ для VStack/HStack
+        return 16 // За замовчуванням, буде перевизначено через environment
     }
 }
 
@@ -295,7 +295,7 @@ struct AdaptiveHeadlineModifier: ViewModifier {
     }
 }
 
-// MARK: - Adaptive Modal Sizes (ВИПРАВЛЕНО!)
+// MARK: - Adaptive Modal Sizes
 
 extension View {
     func adaptiveSheet() -> some View {
@@ -540,7 +540,7 @@ struct ExampleAdaptiveView: View {
             }
             .adaptiveScreenPadding()
         }
-        .adaptiveContainer() // ⚠️ ВАЖЛИВО: додати на root view!
+        .adaptiveContainer() // ВАЖЛИВО: додати на root view для адаптивності!
     }
     
     // Sample data

@@ -1,6 +1,6 @@
 //
 //  Persistence.swift
-//  DoneDay
+//  DoneDay - Core Data persistence layer
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //

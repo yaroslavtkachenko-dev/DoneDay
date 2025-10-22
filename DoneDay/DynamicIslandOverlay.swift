@@ -1,6 +1,6 @@
 //
 //  DynamicIslandOverlay.swift
-//  DoneDay
+//  DoneDay - Імітація Dynamic Island з статистикою завдань
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //

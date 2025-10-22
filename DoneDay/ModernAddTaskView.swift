@@ -1,6 +1,6 @@
 //
 //  ModernAddTaskView.swift
-//  DoneDay
+//  DoneDay - Сучасний інтерфейс для створення завдань
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //

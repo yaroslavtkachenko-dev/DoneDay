@@ -1,6 +1,6 @@
 //
 //  DoneDayApp.swift
-//  DoneDay
+//  DoneDay - Головний файл додатку
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //

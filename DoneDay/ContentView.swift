@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  DoneDay - З ПОКРАЩЕНИМ ЧЕКБОКСОМ
+//  DoneDay - Головний інтерфейс додатку з фільтрами завдань
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //

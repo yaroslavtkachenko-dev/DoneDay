@@ -1,6 +1,6 @@
 //
 //  TaskViewModel.swift
-//  DoneDay - З ТЕГАМИ
+//  DoneDay - ViewModel для управління завданнями та проектами
 //
 //  Created by Yaroslav Tkachenko on 28.09.2025.
 //
@@ -335,7 +335,7 @@ class TaskViewModel: ObservableObject {
         }
     }
     
-    // MARK: - ✅ Tag Actions (НОВЕ!)
+    // MARK: - Tag Actions
     
     func addTag(name: String, color: String? = nil) {
         let result = tagRepository.createTag(
