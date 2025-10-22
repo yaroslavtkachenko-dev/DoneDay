@@ -376,32 +376,13 @@ struct QuickAddTaskView: View {
     private func addTask() {
         let trimmedTitle = taskTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // ✅ Використовуємо репозиторій через TaskViewModel
-        let result = taskViewModel.taskRepository.createTask(
+        // Використовуємо метод ViewModel
+        taskViewModel.createTaskWithDueDate(
             title: trimmedTitle,
-            description: "",
-            area: nil,
-            project: nil
+            date: date
         )
         
-        switch result {
-        case .success(let task):
-            // Встановлюємо дату виконання
-            task.dueDate = date
-            task.updatedAt = Date()
-            
-            // Зберігаємо зміни
-            let saveResult = taskViewModel.taskRepository.save()
-            switch saveResult {
-            case .success:
-                taskViewModel.loadTasks()
-                onDismiss()
-            case .failure(let error):
-                ErrorAlertManager.shared.handle(error)
-            }
-        case .failure(let error):
-            ErrorAlertManager.shared.handle(error)
-        }
+        onDismiss()
     }
 }
 

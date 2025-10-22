@@ -170,7 +170,7 @@ struct EnhancedContentView: View {
             #endif
         }
             
-            // Detail placeholder
+            // Detail view
             WeeklyOverviewView(taskViewModel: taskViewModel)
         }
     }

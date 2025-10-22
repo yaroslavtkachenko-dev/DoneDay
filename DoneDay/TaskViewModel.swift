@@ -11,184 +11,105 @@ import Combine
 
 class TaskViewModel: ObservableObject {
     
-    // MARK: - Published Properties
+    // MARK: - Published Properties (Auto-updating via FRC)
     @Published var tasks: [TaskEntity] = []
     @Published var projects: [ProjectEntity] = []
     @Published var areas: [AreaEntity] = []
     @Published var tags: [TagEntity] = []
     
-    // MARK: - Repositories (Using Result<Success, Error>)
+    // MARK: - Repositories
     let taskRepository: TaskRepository
     let projectRepository: ProjectRepository
     let areaRepository: AreaRepository
     let tagRepository: TagRepository
     
+    // MARK: - Private Publishers (FRC-based)
+    private let tasksPublisher: FetchedResultsPublisher<TaskEntity>
+    private let projectsPublisher: FetchedResultsPublisher<ProjectEntity>
+    private let areasPublisher: FetchedResultsPublisher<AreaEntity>
+    private let tagsPublisher: FetchedResultsPublisher<TagEntity>
+    
     // MARK: - Combine
     private var cancellables = Set<AnyCancellable>()
     
     init() {
-        self.taskRepository = TaskRepository()
-        self.projectRepository = ProjectRepository()
-        self.areaRepository = AreaRepository()
-        self.tagRepository = TagRepository()
+        let context = PersistenceController.shared.context
         
-        setupNotificationObserver()
-        loadAllData()
+        // Ініціалізація repositories
+        self.taskRepository = TaskRepository(context: context)
+        self.projectRepository = ProjectRepository(context: context)
+        self.areaRepository = AreaRepository(context: context)
+        self.tagRepository = TagRepository(context: context)
+        
+        // Створення FRC publishers для кожної entity
+        
+        // Tasks: активні завдання, сортовані по sortOrder
+        self.tasksPublisher = FetchedResultsPublisher(
+            context: context,
+            entityName: "TaskEntity",
+            sortDescriptors: [NSSortDescriptor(key: "sortOrder", ascending: true)],
+            predicate: NSPredicate(format: "isCompleted == false AND isDelete == false")
+        )
+        
+        // Projects: активні проекти, сортовані по назві
+        self.projectsPublisher = FetchedResultsPublisher(
+            context: context,
+            entityName: "ProjectEntity",
+            sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
+            predicate: NSPredicate(format: "isCompleted == false")
+        )
+        
+        // Areas: всі області, сортовані по назві
+        self.areasPublisher = FetchedResultsPublisher(
+            context: context,
+            entityName: "AreaEntity",
+            sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
+            predicate: nil
+        )
+        
+        // Tags: всі теги, сортовані по назві
+        self.tagsPublisher = FetchedResultsPublisher(
+            context: context,
+            entityName: "TagEntity",
+            sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
+            predicate: nil
+        )
+        
+        // Підписка на автоматичні оновлення
+        setupBindings()
     }
     
-    // MARK: - Setup
+    // MARK: - Setup Bindings
     
-    private func setupNotificationObserver() {
-        NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
-            .sink { [weak self] notification in
-                DispatchQueue.main.async {
-                    self?.handleContextSave(notification: notification)
-                }
-            }
+    /// Підписується на зміни з FRC publishers і оновлює @Published properties
+    private func setupBindings() {
+        // Tasks: коли tasksPublisher.entities змінюється → оновлюємо tasks
+        tasksPublisher.$entities
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.tasks, on: self)
             .store(in: &cancellables)
-    }
-    
-    // MARK: - Selective Data Refresh (Performance Optimization)
-    
-    private func handleContextSave(notification: Notification) {
-        guard let userInfo = notification.userInfo else {
-            return
-        }
         
-        var shouldReloadTasks = false
-        var shouldReloadProjects = false
-        var shouldReloadAreas = false
-        var shouldReloadTags = false
+        // Projects
+        projectsPublisher.$entities
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.projects, on: self)
+            .store(in: &cancellables)
         
-        // Check inserted objects
-        if let insertedObjects = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject> {
-            for object in insertedObjects {
-                switch object {
-                case is TaskEntity:
-                    shouldReloadTasks = true
-                case is ProjectEntity:
-                    shouldReloadProjects = true
-                case is AreaEntity:
-                    shouldReloadAreas = true
-                case is TagEntity:
-                    shouldReloadTags = true
-                default:
-                    break
-                }
-            }
-        }
+        // Areas
+        areasPublisher.$entities
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.areas, on: self)
+            .store(in: &cancellables)
         
-        // Check updated objects
-        if let updatedObjects = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject> {
-            for object in updatedObjects {
-                switch object {
-                case is TaskEntity:
-                    shouldReloadTasks = true
-                case is ProjectEntity:
-                    shouldReloadProjects = true
-                case is AreaEntity:
-                    shouldReloadAreas = true
-                case is TagEntity:
-                    shouldReloadTags = true
-                default:
-                    break
-                }
-            }
-        }
+        // Tags
+        tagsPublisher.$entities
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.tags, on: self)
+            .store(in: &cancellables)
         
-        // Check deleted objects
-        if let deletedObjects = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject> {
-            for object in deletedObjects {
-                switch object {
-                case is TaskEntity:
-                    shouldReloadTasks = true
-                case is ProjectEntity:
-                    shouldReloadProjects = true
-                case is AreaEntity:
-                    shouldReloadAreas = true
-                case is TagEntity:
-                    shouldReloadTags = true
-                default:
-                    break
-                }
-            }
-        }
-        
-        // Reload only changed data (Performance improvement)
-        if shouldReloadTasks {
-            loadTasks()
-        }
-        if shouldReloadProjects {
-            loadProjects()
-        }
-        if shouldReloadAreas {
-            loadAreas()
-        }
-        if shouldReloadTags {
-            loadTags()
-        }
-        
-        // Log for debugging
-        if shouldReloadTasks || shouldReloadProjects || shouldReloadAreas || shouldReloadTags {
-            logger.debug("Selective refresh: Tasks=\(shouldReloadTasks), Projects=\(shouldReloadProjects), Areas=\(shouldReloadAreas), Tags=\(shouldReloadTags)", category: .viewModel)
-        }
+        logger.success("TaskViewModel: FRC bindings established", category: .viewModel)
     }
     
-    // MARK: - Data Loading
-    
-    func loadAllData() {
-        loadTasks()
-        loadProjects()
-        loadAreas()
-        loadTags()
-    }
-    
-    func loadTasks() {
-        let result = taskRepository.fetchActiveTasks()
-        switch result {
-        case .success(let fetchedTasks):
-            tasks = fetchedTasks.sorted { (task1: TaskEntity, task2: TaskEntity) in
-                // Сортуємо за sortOrder
-                return task1.sortOrder < task2.sortOrder
-            }
-        case .failure(let error):
-            ErrorAlertManager.shared.handle(error)
-            tasks = []
-        }
-    }
-    
-    func loadProjects() {
-        let result = projectRepository.fetchActiveProjects()
-        switch result {
-        case .success(let fetchedProjects):
-            projects = fetchedProjects
-        case .failure(let error):
-            ErrorAlertManager.shared.handle(error)
-            projects = []
-        }
-    }
-    
-    func loadAreas() {
-        let result = areaRepository.fetchAllAreas()
-        switch result {
-        case .success(let fetchedAreas):
-            areas = fetchedAreas
-        case .failure(let error):
-            ErrorAlertManager.shared.handle(error)
-            areas = []
-        }
-    }
-    
-    func loadTags() {
-        let result = tagRepository.fetchAllTags()
-        switch result {
-        case .success(let fetchedTags):
-            tags = fetchedTags
-        case .failure(let error):
-            ErrorAlertManager.shared.handle(error)
-            tags = []
-        }
-    }
     
     // MARK: - Task Actions
     
@@ -203,7 +124,49 @@ class TaskViewModel: ObservableObject {
         switch result {
         case .success(let task):
             logger.success("Task created: \(task.title ?? "")", category: .viewModel)
-            loadTasks()
+            // Не викликаємо loadTasks() - FRC автоматично оновить
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
+        }
+    }
+    
+    /// Створює завдання з конкретною датою виконання
+    /// - Parameters:
+    ///   - title: Назва завдання
+    ///   - date: Дата виконання
+    ///   - description: Опис (опціонально)
+    ///   - project: Проект (опціонально)
+    ///   - area: Область (опціонально)
+    func createTaskWithDueDate(
+        title: String,
+        date: Date,
+        description: String = "",
+        project: ProjectEntity? = nil,
+        area: AreaEntity? = nil
+    ) {
+        let result = taskRepository.createTask(
+            title: title,
+            description: description,
+            area: area,
+            project: project
+        )
+        
+        switch result {
+        case .success(let task):
+            // Встановлюємо дату в одному місці
+            task.dueDate = date
+            task.updatedAt = Date()
+            
+            // Зберігаємо через repository
+            let saveResult = taskRepository.save()
+            switch saveResult {
+            case .success:
+                logger.success("Task with due date created: \(task.title ?? "")", category: .viewModel)
+                // FRC автоматично оновить список
+            case .failure(let error):
+                ErrorAlertManager.shared.handle(error)
+            }
+            
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
@@ -220,7 +183,8 @@ class TaskViewModel: ObservableObject {
         
         switch result {
         case .success:
-            loadTasks()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
@@ -231,59 +195,67 @@ class TaskViewModel: ObservableObject {
         
         switch result {
         case .success:
-            loadTasks()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
     }
     
     func deleteTasks(at offsets: IndexSet) {
-        for index in offsets {
-            deleteTask(tasks[index])
+        let tasksToDelete = offsets.map { tasks[$0] }
+        
+        // Оптимізовано: Видаляємо всі з контексту
+        for task in tasksToDelete {
+            PersistenceController.shared.context.delete(task)
+        }
+        
+        // Один save для всіх
+        let result = taskRepository.save()
+        switch result {
+        case .success:
+            logger.success("Deleted \(tasksToDelete.count) tasks", category: .viewModel)
+            // FRC автоматично оновить
+        case .failure(let error):
+            ErrorAlertManager.shared.handle(error)
         }
     }
     
     // MARK: - Smart Lists
     
+    /// Завдання на сьогодні - фільтрує з уже завантажених tasks
     func getTodayTasks() -> [TaskEntity] {
-        let result = taskRepository.fetchTodayTasks()
-        switch result {
-        case .success(let tasks):
-            return tasks.sorted { (task1: TaskEntity, task2: TaskEntity) in
-                return task1.sortOrder < task2.sortOrder
-            }
-        case .failure(let error):
-            ErrorAlertManager.shared.handle(error)
-            return []
-        }
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
+        
+        return tasks.filter { task in  // Фільтруємо з tasks, які вже є
+            guard let dueDate = task.dueDate else { return false }
+            return dueDate >= today && dueDate < tomorrow
+        }.sorted { $0.sortOrder < $1.sortOrder }
     }
     
+    /// Майбутні завдання (наступні 7 днів) - фільтрує з уже завантажених tasks
     func getUpcomingTasks() -> [TaskEntity] {
-        let result = taskRepository.fetchUpcomingTasks()
-        switch result {
-        case .success(let tasks):
-            return tasks.sorted { (task1: TaskEntity, task2: TaskEntity) in
-                return task1.sortOrder < task2.sortOrder
-            }
-        case .failure(let error):
-            ErrorAlertManager.shared.handle(error)
-            return []
-        }
+        let calendar = Calendar.current
+        let today = Date()
+        let futureDate = calendar.date(byAdding: .day, value: 7, to: today)!
+        
+        return tasks.filter { task in  // Фільтруємо з tasks
+            guard let dueDate = task.dueDate else { return false }
+            return dueDate > today && dueDate <= futureDate
+        }.sorted { $0.sortOrder < $1.sortOrder }
     }
     
+    /// Inbox завдання (без проекту та області) - фільтрує з уже завантажених tasks
     func getInboxTasks() -> [TaskEntity] {
-        let result = taskRepository.fetchInboxTasks()
-        switch result {
-        case .success(let tasks):
-            return tasks.sorted { (task1: TaskEntity, task2: TaskEntity) in
-                return task1.sortOrder < task2.sortOrder
-            }
-        case .failure(let error):
-            ErrorAlertManager.shared.handle(error)
-            return []
-        }
+        return tasks.filter { task in  // Фільтруємо з tasks
+            task.area == nil && task.project == nil
+        }.sorted { $0.sortOrder < $1.sortOrder }
     }
     
+    /// Завершені завдання - треба fetch окремо, бо FRC показує тільки активні
+    /// Це єдиний метод, який ПРАВИЛЬНО робить окремий fetch
     func getCompletedTasks() -> [TaskEntity] {
         let result = taskRepository.fetchCompletedTasks()
         switch result {
@@ -309,7 +281,7 @@ class TaskViewModel: ObservableObject {
         switch result {
         case .success(let project):
             logger.success("Project created: \(project.name ?? "")", category: .viewModel)
-            loadProjects()
+            // FRC автоматично оновить список
             return project
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
@@ -329,7 +301,8 @@ class TaskViewModel: ObservableObject {
         
         switch result {
         case .success:
-            loadAreas()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
@@ -345,7 +318,8 @@ class TaskViewModel: ObservableObject {
         
         switch result {
         case .success:
-            loadTags()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
@@ -356,7 +330,8 @@ class TaskViewModel: ObservableObject {
         
         switch result {
         case .success:
-            loadTags()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }

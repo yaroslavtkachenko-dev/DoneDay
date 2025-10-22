@@ -138,7 +138,8 @@ struct ModernTaskDetailView: View {
         let saveResult = PersistenceController.shared.save()
         switch saveResult {
         case .success:
-            taskViewModel.loadTasks()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
@@ -147,7 +148,8 @@ struct ModernTaskDetailView: View {
     private func handleSaveResult(_ result: Result<TaskEntity, AppError>) {
         switch result {
         case .success:
-            taskViewModel.loadTasks()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }

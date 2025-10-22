@@ -16,7 +16,7 @@ class DynamicIslandWindow: NSWindow {
     private var mouseMonitor: Any?
     private var isRevealed = false
     
-    // ✅ ВИПРАВЛЕНО: Позиції з врахуванням menu bar та notch
+    // Позиції з врахуванням menu bar та notch
     private var hiddenY: CGFloat {
         guard let screen = NSScreen.main else { return 800 }
         // Використовуємо visibleFrame (враховує menu bar)
@@ -58,14 +58,14 @@ class DynamicIslandWindow: NSWindow {
         self.isOpaque = false
         self.backgroundColor = NSColor.clear
         
-        // ✅ ВИПРАВЛЕНО: statusBar level для menu bar-like поведінки
+        // statusBar level для menu bar-like поведінки
         self.level = .statusBar
         
         self.ignoresMouseEvents = false
         self.hasShadow = true
         self.isMovable = false
         
-        // ✅ ВИПРАВЛЕНО: Додано .fullScreenAuxiliary
+        // Додано .fullScreenAuxiliary
         self.collectionBehavior = [
             .canJoinAllSpaces,
             .fullScreenAuxiliary,
@@ -81,20 +81,9 @@ class DynamicIslandWindow: NSWindow {
         let hostingView = NSHostingView(rootView: SimpleDynamicIslandView())
         self.hostingView = hostingView
         self.contentView = hostingView
-        
-        print("🏗️ Dynamic Island ініціалізовано")
-        
-        // ✅ ДОДАНО: Лог для діагностики
-        if #available(macOS 12, *), let screen = NSScreen.main {
-            let hasNotch = screen.safeAreaInsets.top > 0
-            print("📱 Notch виявлено: \(hasNotch)")
-            print("📏 Safe area top: \(screen.safeAreaInsets.top)")
-            print("📐 Visible frame: \(screen.visibleFrame)")
-            print("📐 Full frame: \(screen.frame)")
-        }
     }
     
-    // ✅ НОВИЙ метод для центрування
+    // Метод для центрування
     private func centerWindowHorizontally() {
         guard let screen = NSScreen.main else { return }
         let x = (screen.frame.width - self.frame.width) / 2
@@ -110,7 +99,7 @@ class DynamicIslandWindow: NSWindow {
             let mouseLocation = NSEvent.mouseLocation
             guard let screen = NSScreen.main else { return }
             
-            // ✅ ВИПРАВЛЕНО: Використовуємо visibleFrame для обчислення зони активації
+            // Використовуємо visibleFrame для обчислення зони активації
             let visibleTop = screen.visibleFrame.maxY
             let activationZoneHeight: CGFloat = 80
             
@@ -143,8 +132,6 @@ class DynamicIslandWindow: NSWindow {
             context.timingFunction = CAMediaTimingFunction(name: .easeOut)
             self.animator().setFrameOrigin(NSPoint(x: x, y: targetY))
         })
-        
-        print("⬇️ Dynamic Island показано на Y: \(targetY)")
     }
     
     private func hideWindow(animated: Bool) {
@@ -162,10 +149,6 @@ class DynamicIslandWindow: NSWindow {
             })
         } else {
             self.setFrameOrigin(NSPoint(x: x, y: targetY))
-        }
-        
-        if animated {
-            print("⬆️ Dynamic Island сховано на Y: \(targetY)")
         }
     }
     
@@ -200,7 +183,6 @@ class DynamicIslandWindow: NSWindow {
             NSEvent.removeMonitor(monitor)
         }
         hostingView = nil
-        print("♻️ DynamicIslandWindow deinit")
     }
 }
 

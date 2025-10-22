@@ -27,7 +27,8 @@ extension TaskViewModel {
         
         switch result {
         case .success:
-            loadProjects()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
@@ -76,8 +77,8 @@ extension TaskViewModel {
         let result = projectRepository.save()
         switch result {
         case .success:
-            loadProjects()
-            loadTasks()
+            // FRC автоматично оновить списки
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
@@ -113,8 +114,8 @@ extension TaskViewModel {
         let deleteResult = projectRepository.deleteProject(project)
         switch deleteResult {
         case .success:
-            loadProjects()
-            loadTasks()
+            // FRC автоматично оновить списки
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
@@ -131,7 +132,8 @@ extension TaskViewModel {
         
         switch result {
         case .success:
-            loadProjects()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }
@@ -144,7 +146,8 @@ extension TaskViewModel {
         let result = projectRepository.save()
         switch result {
         case .success:
-            loadProjects()
+            // FRC автоматично оновить список
+            break
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }

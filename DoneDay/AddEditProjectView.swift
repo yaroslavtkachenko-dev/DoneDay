@@ -62,7 +62,7 @@ struct AddEditProjectView: View {
     
     var body: some View {
         NavigationView {
-            // ✅ Обмежуємо ширину контенту
+            // Обмежуємо ширину контенту
             ScrollView {
                 VStack(spacing: 20) {
                     // Header
@@ -107,7 +107,7 @@ struct AddEditProjectView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }
-            .frame(maxWidth: 600) // ✅ Обмежуємо ширину!
+            .frame(maxWidth: 600) // Обмежуємо ширину!
             .background(Color(NSColor.controlBackgroundColor))
             .navigationTitle("")
             .toolbar {
@@ -313,7 +313,7 @@ struct ProjectAppearanceSection: View {
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                     
-                    // ✅ Фіксована ширина для кольорів
+                    // Фіксована ширина для кольорів
                     HStack(spacing: 10) {
                         ForEach(availableColors, id: \.0) { colorName, color in
                             Button {
@@ -345,7 +345,7 @@ struct ProjectAppearanceSection: View {
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                     
-                    // ✅ Grid з правильними відступами
+                    // Grid з правильними відступами
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 6), spacing: 10) {
                         ForEach(availableIcons, id: \.self) { icon in
                             Button {
@@ -480,7 +480,7 @@ struct ProjectPreviewCompact: View {
                     .fontWeight(.semibold)
             }
             
-            // ✅ Один компактний preview
+            // Один компактний preview
             HStack(spacing: 12) {
                 Circle()
                     .fill(colorForName.gradient)
