@@ -120,7 +120,10 @@ class TaskViewModel: ObservableObject {
         area: AreaEntity? = nil,
         priority: Int = 0,
         dueDate: Date? = nil,
-        startDate: Date? = nil
+        startDate: Date? = nil,
+        reminderEnabled: Bool = false,
+        reminderTime: Date? = nil,
+        reminderOffset: Int16 = 0
     ) {
         // 🔍 DEBUG: Логування вхідних параметрів
         print("📥 [TaskViewModel.addTask] Received parameters:")
@@ -135,7 +138,10 @@ class TaskViewModel: ObservableObject {
             project: project,
             priority: priority,
             dueDate: dueDate,
-            startDate: startDate
+            startDate: startDate,
+            reminderEnabled: reminderEnabled,
+            reminderTime: reminderTime,
+            reminderOffset: reminderOffset
         )
         
         switch result {

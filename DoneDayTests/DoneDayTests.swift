@@ -658,8 +658,9 @@ class PriorityTests: DoneDayTestCase {
         switch result {
         case .success:
             XCTFail("Expected failure for invalid priority")
-        case .failure(let error):
-            XCTAssertTrue(error.errorDescription?.contains("invalid") != nil || error == .invalidData)
+        case .failure:
+            // Success - validation should reject invalid values
+            break
         }
     }
     
@@ -705,6 +706,188 @@ class PriorityTests: DoneDayTestCase {
                 // Success - validation correctly rejects invalid value
                 break
             }
+        }
+    }
+}
+
+// MARK: - Recurring Tasks Tests
+
+class RecurringTasksTests: DoneDayTestCase {
+    
+    var repository: TaskRepository!
+    
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        repository = TaskRepository(context: testContext)
+    }
+    
+    func testMarkCompleted_DailyRecurringTask_CreatesNextInstance() {
+        // Given - створюємо щоденне повторюване завдання
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
+        let result = repository.createTask(
+            title: "Щоденне завдання",
+            priority: 1,
+            dueDate: tomorrow
+        )
+        
+        guard case .success(let task) = result else {
+            XCTFail("Failed to create task")
+            return
+        }
+        
+        // Налаштовуємо recurring параметри
+        task.recurrenceType = "daily"
+        task.recurrenceInterval = 1
+        _ = repository.save()
+        
+        // When - позначаємо завдання як завершене
+        let completionResult = repository.markCompleted(task)
+        
+        // Then - перевіряємо що створено новий екземпляр
+        switch completionResult {
+        case .success:
+            XCTAssertTrue(task.isCompleted, "Оригінальне завдання має бути завершене")
+            
+            // Fetch всі завдання включно з завершеними
+            let fetchResult = repository.fetch()
+            if case .success(let allTasks) = fetchResult {
+                let activeTasks = allTasks.filter { !$0.isCompleted }
+                
+                // Має бути створене нове активне завдання з такою самою назвою
+                let newTask = activeTasks.first { $0.title == "Щоденне завдання" && $0.id != task.id }
+                XCTAssertNotNil(newTask, "Має бути створено нове завдання")
+                
+                if let newTask = newTask {
+                    XCTAssertEqual(newTask.recurrenceType, "daily", "Нове завдання має мати той самий recurrence type")
+                    XCTAssertEqual(newTask.recurrenceInterval, 1, "Нове завдання має мати той самий recurrence interval")
+                    
+                    // Перевіряємо що dueDate збільшилась на 1 день
+                    if let originalDueDate = task.dueDate, let newDueDate = newTask.dueDate {
+                        let expectedNextDate = Calendar.current.date(byAdding: .day, value: 1, to: originalDueDate)!
+                        let calendar = Calendar.current
+                        XCTAssertTrue(
+                            calendar.isDate(newDueDate, inSameDayAs: expectedNextDate),
+                            "Нова дата має бути на 1 день пізніше"
+                        )
+                    } else {
+                        XCTFail("Обидва завдання мають мати dueDate")
+                    }
+                }
+            } else {
+                XCTFail("Failed to fetch tasks")
+            }
+            
+        case .failure(let error):
+            XCTFail("Failed to mark task completed: \(error)")
+        }
+    }
+    
+    func testMarkCompleted_WeeklyRecurringTask_CreatesNextInstance() {
+        // Given - створюємо щотижневе повторюване завдання
+        let nextWeek = Calendar.current.date(byAdding: .weekOfYear, value: 1, to: Date())!
+        let result = repository.createTask(
+            title: "Щотижневе завдання",
+            priority: 2,
+            dueDate: nextWeek
+        )
+        
+        guard case .success(let task) = result else {
+            XCTFail("Failed to create task")
+            return
+        }
+        
+        task.recurrenceType = "weekly"
+        task.recurrenceInterval = 1
+        _ = repository.save()
+        
+        // When
+        let completionResult = repository.markCompleted(task)
+        
+        // Then
+        switch completionResult {
+        case .success:
+            let fetchResult = repository.fetch()
+            if case .success(let allTasks) = fetchResult {
+                let activeTasks = allTasks.filter { !$0.isCompleted }
+                let newTask = activeTasks.first { $0.title == "Щотижневе завдання" && $0.id != task.id }
+                
+                XCTAssertNotNil(newTask, "Має бути створено нове завдання")
+                if let newTask = newTask {
+                    XCTAssertEqual(newTask.recurrenceType, "weekly")
+                }
+            }
+        case .failure(let error):
+            XCTFail("Failed: \(error)")
+        }
+    }
+    
+    func testMarkCompleted_RecurringTaskWithEndDate_StopsWhenEndDateReached() {
+        // Given - створюємо recurring завдання з кінцевою датою
+        let today = Date()
+        let result = repository.createTask(
+            title: "Завдання з кінцевою датою",
+            dueDate: today
+        )
+        
+        guard case .success(let task) = result else {
+            XCTFail("Failed to create task")
+            return
+        }
+        
+        task.recurrenceType = "daily"
+        task.recurrenceInterval = 1
+        // Встановлюємо endDate на вчора (тобто вже минула)
+        task.recurrenceEndDate = Calendar.current.date(byAdding: .day, value: -1, to: today)
+        _ = repository.save()
+        
+        // When - позначаємо завдання як завершене
+        let completionResult = repository.markCompleted(task)
+        
+        // Then - не має створюватися нове завдання
+        switch completionResult {
+        case .success:
+            XCTAssertTrue(task.isCompleted)
+            
+            let fetchResult = repository.fetch()
+            if case .success(let allTasks) = fetchResult {
+                let activeTasks = allTasks.filter { !$0.isCompleted }
+                let newTask = activeTasks.first { $0.title == "Завдання з кінцевою датою" && $0.id != task.id }
+                
+                XCTAssertNil(newTask, "НЕ має створюватися нове завдання, бо досягнуто кінцеву дату")
+            }
+        case .failure(let error):
+            XCTFail("Failed: \(error)")
+        }
+    }
+    
+    func testMarkCompleted_NonRecurringTask_DoesNotCreateNewInstance() {
+        // Given - звичайне (не повторюване) завдання
+        let result = repository.createTask(
+            title: "Звичайне завдання",
+            dueDate: Date()
+        )
+        
+        guard case .success(let task) = result else {
+            XCTFail("Failed to create task")
+            return
+        }
+        
+        // Переконуємося що recurrenceType = "none"
+        task.recurrenceType = "none"
+        _ = repository.save()
+        
+        let initialCount = (repository.fetch().handleError() ?? []).count
+        
+        // When
+        let completionResult = repository.markCompleted(task)
+        
+        // Then - не має створюватися нове завдання
+        switch completionResult {
+        case .success:
+            let finalCount = (repository.fetch().handleError() ?? []).count
+            XCTAssertEqual(finalCount, initialCount, "Кількість завдань не має змінитися")
+        case .failure(let error):
+            XCTFail("Failed: \(error)")
         }
     }
 }

@@ -37,6 +37,7 @@ enum LogCategory: String {
     case ui = "UI"
     case validation = "Validation"
     case network = "Network"
+    case notification = "Notification"
     case general = "General"
     
     var icon: String {
@@ -47,6 +48,7 @@ enum LogCategory: String {
         case .ui: return "🎨"
         case .validation: return "✓"
         case .network: return "🌐"
+        case .notification: return "🔔"
         case .general: return "📋"
         }
     }
@@ -72,7 +74,7 @@ class AppLogger {
     
     private init() {
         // Створити logger для кожної категорії
-        for category in [LogCategory.coreData, .repository, .viewModel, .ui, .validation, .network, .general] {
+        for category in [LogCategory.coreData, .repository, .viewModel, .ui, .validation, .network, .notification, .general] {
             loggers[category] = Logger(subsystem: subsystem, category: category.rawValue)
         }
     }

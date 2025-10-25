@@ -96,13 +96,15 @@ final class DoneDayUITests: XCTestCase {
         }
     }
     
+    // TODO: Виправити для macOS - scrollDecelerationMetric недоступна
+    /*
     @MainActor
     func testScrollPerformance() throws {
         // Якщо є список завдань, тестуємо швидкість скролу
         let taskList = app.scrollViews.firstMatch
         
         if taskList.exists {
-            measure(metrics: [XCTOSSignpostMetric.scrollDecelerationMetric]) {
+            measure {
                 taskList.swipeUp()
                 taskList.swipeDown()
             }
@@ -110,6 +112,7 @@ final class DoneDayUITests: XCTestCase {
             print("ℹ️ Немає списку для тестування скролу")
         }
     }
+    */
     
     // MARK: - Accessibility Tests
     

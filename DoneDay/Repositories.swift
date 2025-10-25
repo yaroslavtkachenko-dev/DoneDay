@@ -72,7 +72,10 @@ class TaskRepository: BaseRepository<TaskEntity> {
         project: ProjectEntity? = nil,
         priority: Int = 0,
         dueDate: Date? = nil,
-        startDate: Date? = nil
+        startDate: Date? = nil,
+        reminderEnabled: Bool = false,
+        reminderTime: Date? = nil,
+        reminderOffset: Int16 = 0
     ) -> Result<TaskEntity, AppError> {
         // Валідація
         let validationResult = ValidationService.shared.validateTaskTitle(title)
@@ -108,6 +111,11 @@ class TaskRepository: BaseRepository<TaskEntity> {
             task.startDate = startDate
             task.sortOrder = Int32(Date().timeIntervalSince1970)
             
+            // Налаштування нагадувань
+            task.reminderEnabled = reminderEnabled
+            task.reminderTime = reminderTime
+            task.reminderOffset = reminderOffset
+            
             // 🔍 DEBUG: Підтвердження встановлення пріоритету
             print("🎯 [TaskRepository] Task created with priority: \(task.priority)")
             
@@ -115,6 +123,10 @@ class TaskRepository: BaseRepository<TaskEntity> {
             let saveResult = save()
             switch saveResult {
             case .success:
+                // Заплануват нагадування якщо увімкнено
+                if reminderEnabled {
+                    NotificationManager.shared.scheduleNotification(for: task)
+                }
                 return .success(task)
             case .failure(let error):
                 return .failure(.taskCreationFailed(reason: error.localizedDescription))
@@ -165,6 +177,47 @@ class TaskRepository: BaseRepository<TaskEntity> {
         task.completedAt = Date()
         task.updatedAt = Date()
         
+        // Скасувати нагадування для завершеного завдання
+        NotificationManager.shared.cancelNotification(for: task)
+        
+        // MARK: - Recurring Tasks Logic
+        // Якщо завдання повторюване, створюємо наступний екземпляр
+        if task.isRecurring, let nextDate = task.nextRecurrenceDate() {
+            // Перевіряємо чи не перевищено recurrenceEndDate
+            let shouldCreateNext: Bool
+            if let endDate = task.recurrenceEndDate {
+                shouldCreateNext = nextDate <= endDate
+            } else {
+                shouldCreateNext = true
+            }
+            
+            if shouldCreateNext {
+                // Створюємо новий екземпляр з тими самими параметрами
+                let newTaskResult = createTask(
+                    title: task.title ?? "Повторюване завдання",
+                    description: task.notes,
+                    area: task.area,
+                    project: task.project,
+                    priority: Int(task.priority),
+                    dueDate: nextDate,
+                    startDate: nil
+                )
+                
+                // Копіюємо recurring параметри до нового завдання
+                if case .success(let newTask) = newTaskResult {
+                    newTask.recurrenceType = task.recurrenceType
+                    newTask.recurrenceInterval = task.recurrenceInterval
+                    newTask.recurrenceEndDate = task.recurrenceEndDate
+                    
+                    print("✅ [TaskRepository] Created next recurring task: \(newTask.title ?? "") for date: \(nextDate)")
+                } else if case .failure(let error) = newTaskResult {
+                    print("❌ [TaskRepository] Failed to create next recurring task: \(error)")
+                }
+            } else {
+                print("ℹ️ [TaskRepository] Recurring task reached end date, not creating next instance")
+            }
+        }
+        
         let saveResult = save()
         switch saveResult {
         case .success:
@@ -175,6 +228,9 @@ class TaskRepository: BaseRepository<TaskEntity> {
     }
     
     func deleteTask(_ task: TaskEntity) -> Result<Void, AppError> {
+        // Скасувати нагадування перед видаленням
+        NotificationManager.shared.cancelNotification(for: task)
+        
         let result = delete(task)
         switch result {
         case .success:

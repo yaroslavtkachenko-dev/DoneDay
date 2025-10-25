@@ -22,6 +22,12 @@ struct ModernTaskDetailView: View {
     @State private var hasDueDate: Bool
     @State private var dueDate: Date
     
+    // Reminder states
+    @State private var reminderEnabled: Bool
+    @State private var reminderType: ReminderOptionType
+    @State private var reminderTime: Date?
+    @State private var reminderOffset: Int16
+    
     init(task: TaskEntity, taskViewModel: TaskViewModel) {
         self.task = task
         self.taskViewModel = taskViewModel
@@ -34,6 +40,24 @@ struct ModernTaskDetailView: View {
         _selectedArea = State(initialValue: task.area)
         _hasDueDate = State(initialValue: task.dueDate != nil)
         _dueDate = State(initialValue: task.dueDate ?? Date())
+        
+        // Initialize reminder states
+        _reminderEnabled = State(initialValue: task.reminderEnabled)
+        _reminderTime = State(initialValue: task.reminderTime)
+        _reminderOffset = State(initialValue: task.reminderOffset)
+        
+        // Визначити тип нагадування
+        if task.reminderOffset == 15 {
+            _reminderType = State(initialValue: .fifteenMinutes)
+        } else if task.reminderOffset == 30 {
+            _reminderType = State(initialValue: .thirtyMinutes)
+        } else if task.reminderOffset == 60 {
+            _reminderType = State(initialValue: .oneHour)
+        } else if task.reminderOffset == 1440 {
+            _reminderType = State(initialValue: .oneDay)
+        } else {
+            _reminderType = State(initialValue: .exactTime)
+        }
     }
     
     var body: some View {
@@ -77,6 +101,16 @@ struct ModernTaskDetailView: View {
                 RecurrenceSection(
                     task: task,
                     onChange: saveRecurrence
+                )
+                
+                // Reminder Section - Нагадування
+                InteractiveReminderSection(
+                    reminderEnabled: $reminderEnabled,
+                    reminderType: $reminderType,
+                    reminderTime: $reminderTime,
+                    reminderOffset: $reminderOffset,
+                    dueDate: hasDueDate ? dueDate : nil,
+                    onChange: saveReminder
                 )
                 
                 // Organization (Project & Area)
@@ -134,6 +168,18 @@ struct ModernTaskDetailView: View {
     private func saveRecurrence() {
         task.updatedAt = Date()
         saveChanges()
+    }
+    
+    private func saveReminder() {
+        task.reminderEnabled = reminderEnabled
+        task.reminderTime = reminderTime
+        task.reminderOffset = reminderOffset
+        task.updatedAt = Date()
+        
+        saveChanges()
+        
+        // Оновити нагадування в системі
+        NotificationManager.shared.updateNotification(for: task)
     }
     
     private func saveOrganization() {
@@ -991,6 +1037,181 @@ struct InteractiveOrganizationSection: View {
         .padding(16)
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+// MARK: - Interactive Reminder Section
+
+struct InteractiveReminderSection: View {
+    @Binding var reminderEnabled: Bool
+    @Binding var reminderType: ReminderOptionType
+    @Binding var reminderTime: Date?
+    @Binding var reminderOffset: Int16
+    let dueDate: Date?
+    let onChange: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Нагадування", systemImage: "bell.fill")
+                .font(.headline)
+                .fontWeight(.semibold)
+            
+            VStack(spacing: 16) {
+                // Toggle для увімкнення
+                HStack {
+                    Image(systemName: "bell.fill")
+                        .font(.title3)
+                        .foregroundColor(.orange)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Увімкнути нагадування")
+                            .font(.body)
+                        
+                        if reminderEnabled {
+                            Text(reminderDescription)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $reminderEnabled)
+                        .labelsHidden()
+                        .onChange(of: reminderEnabled) { _ in
+                            onChange()
+                        }
+                }
+                .padding(12)
+                .background(Color(NSColor.controlBackgroundColor))
+                .cornerRadius(10)
+                
+                // Опції нагадування
+                if reminderEnabled {
+                    if dueDate != nil {
+                        VStack(spacing: 8) {
+                            ForEach(ReminderOptionType.allCases, id: \.self) { option in
+                                ReminderOptionButton(
+                                    option: option,
+                                    isSelected: reminderType == option
+                                ) {
+                                    reminderType = option
+                                    updateReminderValues()
+                                    onChange()
+                                }
+                            }
+                        }
+                    } else {
+                        // Конкретний час
+                        VStack(spacing: 12) {
+                            Text("Оберіть час нагадування")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            DatePicker(
+                                "Час",
+                                selection: Binding(
+                                    get: { reminderTime ?? Date() },
+                                    set: { newValue in
+                                        reminderTime = newValue
+                                        onChange()
+                                    }
+                                ),
+                                displayedComponents: [.date, .hourAndMinute]
+                            )
+                            .datePickerStyle(.compact)
+                        }
+                        .padding(12)
+                        .background(Color(NSColor.controlBackgroundColor))
+                        .cornerRadius(10)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    private var reminderDescription: String {
+        if let dueDate = dueDate {
+            switch reminderType {
+            case .fifteenMinutes: return "За 15 хвилин до дедлайну"
+            case .thirtyMinutes: return "За 30 хвилин до дедлайну"
+            case .oneHour: return "За 1 годину до дедлайну"
+            case .oneDay: return "За 1 день до дедлайну"
+            case .exactTime:
+                if let time = reminderTime {
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .short
+                    formatter.timeStyle = .short
+                    return formatter.string(from: time)
+                }
+                return "Конкретний час"
+            }
+        } else if let time = reminderTime {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            return formatter.string(from: time)
+        }
+        return "Налаштуйте нагадування"
+    }
+    
+    private func updateReminderValues() {
+        guard let dueDate = dueDate else { return }
+        
+        switch reminderType {
+        case .fifteenMinutes:
+            reminderOffset = 15
+            reminderTime = dueDate.addingTimeInterval(-15 * 60)
+        case .thirtyMinutes:
+            reminderOffset = 30
+            reminderTime = dueDate.addingTimeInterval(-30 * 60)
+        case .oneHour:
+            reminderOffset = 60
+            reminderTime = dueDate.addingTimeInterval(-60 * 60)
+        case .oneDay:
+            reminderOffset = 1440
+            reminderTime = dueDate.addingTimeInterval(-24 * 60 * 60)
+        case .exactTime:
+            reminderOffset = 0
+            if reminderTime == nil {
+                reminderTime = dueDate.addingTimeInterval(-3600)
+            }
+        }
+    }
+}
+
+struct ReminderOptionButton: View {
+    let option: ReminderOptionType
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: option.icon)
+                    .font(.body)
+                    .foregroundColor(isSelected ? .white : option.color)
+                    .frame(width: 20)
+                
+                Text(option.rawValue)
+                    .font(.body)
+                    .foregroundColor(isSelected ? .white : .primary)
+                
+                Spacer()
+                
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.white)
+                }
+            }
+            .padding(12)
+            .background(isSelected ? option.color : Color(NSColor.controlBackgroundColor))
+            .cornerRadius(10)
+        }
+        .buttonStyle(.plain)
     }
 }
 

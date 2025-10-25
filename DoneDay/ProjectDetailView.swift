@@ -564,6 +564,23 @@ struct ImprovedTaskCard: View {
                 }
                 
                 HStack(spacing: 8) {
+                    // Проект
+                    if let project = task.project {
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(project.colorValue)
+                                .frame(width: 6, height: 6)
+                            Text(project.name ?? "")
+                                .font(.caption)
+                        }
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(project.colorValue.opacity(0.15))
+                        .clipShape(Capsule())
+                    }
+                    
+                    // Дата
                     if let dueDate = task.dueDate {
                         HStack(spacing: 4) {
                             Image(systemName: "calendar")

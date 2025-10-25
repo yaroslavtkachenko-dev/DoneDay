@@ -22,6 +22,12 @@ struct ModernAddTaskView: View {
     @State private var startDate: Date?
     @State private var hasStartDate = false
     
+    // Reminder states
+    @State private var reminderEnabled = false
+    @State private var reminderType: ReminderOptionType = .fifteenMinutes
+    @State private var reminderTime: Date?
+    @State private var reminderOffset: Int16 = 0
+    
     private var isFormValid: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
@@ -53,6 +59,15 @@ struct ModernAddTaskView: View {
                         dueDate: $dueDate,
                         hasStartDate: $hasStartDate,
                         startDate: $startDate
+                    )
+                    
+                    // Reminder Section
+                    ReminderSection(
+                        reminderEnabled: $reminderEnabled,
+                        reminderType: $reminderType,
+                        reminderTime: $reminderTime,
+                        reminderOffset: $reminderOffset,
+                        dueDate: hasDueDate ? dueDate : nil
                     )
                     
                     Spacer(minLength: 100)
@@ -96,7 +111,10 @@ struct ModernAddTaskView: View {
             area: selectedArea,
             priority: priority,
             dueDate: hasDueDate ? dueDate : nil,
-            startDate: hasStartDate ? startDate : nil
+            startDate: hasStartDate ? startDate : nil,
+            reminderEnabled: reminderEnabled,
+            reminderTime: reminderTime,
+            reminderOffset: reminderOffset
         )
         
         presentationMode.wrappedValue.dismiss()
@@ -494,6 +512,12 @@ struct ModernEditTaskView: View {
     @State private var dueDate: Date?
     @State private var hasDueDate: Bool
     
+    // Reminder states
+    @State private var reminderEnabled: Bool
+    @State private var reminderType: ReminderOptionType
+    @State private var reminderTime: Date?
+    @State private var reminderOffset: Int16
+    
     init(task: TaskEntity, taskViewModel: TaskViewModel) {
         self.task = task
         self.taskViewModel = taskViewModel
@@ -505,6 +529,24 @@ struct ModernEditTaskView: View {
         _priority = State(initialValue: Int(task.priority))
         _dueDate = State(initialValue: task.dueDate)
         _hasDueDate = State(initialValue: task.dueDate != nil)
+        
+        // Ініціалізація reminder states з існуючого завдання
+        _reminderEnabled = State(initialValue: task.reminderEnabled)
+        _reminderTime = State(initialValue: task.reminderTime)
+        _reminderOffset = State(initialValue: task.reminderOffset)
+        
+        // Визначити тип нагадування на основі offset
+        if task.reminderOffset == 15 {
+            _reminderType = State(initialValue: .fifteenMinutes)
+        } else if task.reminderOffset == 30 {
+            _reminderType = State(initialValue: .thirtyMinutes)
+        } else if task.reminderOffset == 60 {
+            _reminderType = State(initialValue: .oneHour)
+        } else if task.reminderOffset == 1440 {
+            _reminderType = State(initialValue: .oneDay)
+        } else {
+            _reminderType = State(initialValue: .exactTime)
+        }
     }
     
     var body: some View {
@@ -546,6 +588,15 @@ struct ModernEditTaskView: View {
                         }
                     }
                     
+                    // Reminder Section
+                    ReminderSection(
+                        reminderEnabled: $reminderEnabled,
+                        reminderType: $reminderType,
+                        reminderTime: $reminderTime,
+                        reminderOffset: $reminderOffset,
+                        dueDate: hasDueDate ? dueDate : nil
+                    )
+                    
                     Spacer(minLength: 100)
                 }
                 .adaptivePadding()
@@ -580,10 +631,17 @@ struct ModernEditTaskView: View {
         task.dueDate = hasDueDate ? dueDate : nil
         task.updatedAt = Date()
         
+        // Update reminder properties
+        task.reminderEnabled = reminderEnabled
+        task.reminderTime = reminderTime
+        task.reminderOffset = reminderOffset
+        
         // Save through PersistenceController with proper error handling
         let saveResult = PersistenceController.shared.save()
         switch saveResult {
         case .success:
+            // Оновити нагадування
+            NotificationManager.shared.updateNotification(for: task)
             presentationMode.wrappedValue.dismiss()
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
