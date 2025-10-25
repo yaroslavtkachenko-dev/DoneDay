@@ -571,6 +571,144 @@ class StreakCalculationTests: DoneDayTestCase {
     }
 }
 
+// MARK: - Priority Tests
+
+class PriorityTests: DoneDayTestCase {
+    
+    var repository: TaskRepository!
+    
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        repository = TaskRepository(context: testContext)
+    }
+    
+    func testCreateTask_WithNoPriority_Success() {
+        // Given
+        let title = "Task without priority"
+        
+        // When
+        let result = repository.createTask(title: title, priority: 0)
+        
+        // Then
+        switch result {
+        case .success(let task):
+            XCTAssertEqual(task.priority, 0, "Priority should be 0")
+            XCTAssertEqual(task.title, title)
+        case .failure(let error):
+            XCTFail("Expected success but got error: \(error)")
+        }
+    }
+    
+    func testCreateTask_WithLowPriority_Success() {
+        // Given
+        let title = "Low priority task"
+        
+        // When
+        let result = repository.createTask(title: title, priority: 1)
+        
+        // Then
+        switch result {
+        case .success(let task):
+            XCTAssertEqual(task.priority, 1, "Priority should be 1")
+        case .failure(let error):
+            XCTFail("Expected success but got error: \(error)")
+        }
+    }
+    
+    func testCreateTask_WithMediumPriority_Success() {
+        // Given
+        let title = "Medium priority task"
+        
+        // When
+        let result = repository.createTask(title: title, priority: 2)
+        
+        // Then
+        switch result {
+        case .success(let task):
+            XCTAssertEqual(task.priority, 2, "Priority should be 2")
+        case .failure(let error):
+            XCTFail("Expected success but got error: \(error)")
+        }
+    }
+    
+    func testCreateTask_WithHighPriority_Success() {
+        // Given
+        let title = "High priority task"
+        
+        // When
+        let result = repository.createTask(title: title, priority: 3)
+        
+        // Then
+        switch result {
+        case .success(let task):
+            XCTAssertEqual(task.priority, 3, "Priority should be 3")
+        case .failure(let error):
+            XCTFail("Expected success but got error: \(error)")
+        }
+    }
+    
+    func testCreateTask_WithInvalidPriority_Failure() {
+        // Given
+        let title = "Invalid priority task"
+        
+        // When
+        let result = repository.createTask(title: title, priority: 5)
+        
+        // Then
+        switch result {
+        case .success:
+            XCTFail("Expected failure for invalid priority")
+        case .failure(let error):
+            XCTAssertTrue(error.errorDescription?.contains("invalid") != nil || error == .invalidData)
+        }
+    }
+    
+    func testCreateTask_WithNegativePriority_Failure() {
+        // Given
+        let title = "Negative priority task"
+        
+        // When
+        let result = repository.createTask(title: title, priority: -1)
+        
+        // Then
+        switch result {
+        case .success:
+            XCTFail("Expected failure for negative priority")
+        case .failure:
+            // Success - validation should reject negative priorities
+            break
+        }
+    }
+    
+    func testPriorityValidation_ValidValues() {
+        // Test all valid priority values
+        for priority in 0...3 {
+            let result = ValidationService.shared.validatePriority(priority)
+            switch result {
+            case .success(let validated):
+                XCTAssertEqual(validated, priority)
+            case .failure:
+                XCTFail("Priority \(priority) should be valid")
+            }
+        }
+    }
+    
+    func testPriorityValidation_InvalidValues() {
+        // Test invalid values
+        let invalidValues = [-1, 4, 5, 10, -10]
+        for priority in invalidValues {
+            let result = ValidationService.shared.validatePriority(priority)
+            switch result {
+            case .success:
+                XCTFail("Priority \(priority) should be invalid")
+            case .failure:
+                // Success - validation correctly rejects invalid value
+                break
+            }
+        }
+    }
+}
+
 // MARK: - Performance Tests
 
 class PerformanceTests: DoneDayTestCase {

@@ -16,6 +16,8 @@ struct ImprovedTaskCheckbox: View {
     var color: Color = .blue
     
     @State private var isPressed = false
+    @State private var animateCheck = false
+    @State private var showRipple = false
     
     var body: some View {
         Button(action: {
@@ -24,48 +26,83 @@ struct ImprovedTaskCheckbox: View {
             impactFeedback.impactOccurred()
             #endif
             
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            // Анімація натискання
+            withAnimation(.spring(response: 0.15, dampingFraction: 0.6)) {
+                isPressed = true
+            }
+            
+            // Ripple effect
+            showRipple = true
+            
+            // Викликаємо action миттєво
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                 action()
+            }
+            
+            // Анімація галочки
+            animateCheck = true
+            
+            // Скидаємо стани
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.6)) {
+                    isPressed = false
+                    animateCheck = false
+                }
+            }
+            
+            // Ripple зникає
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                showRipple = false
             }
         }) {
             ZStack {
+                // Основне коло (обводка)
                 Circle()
                     .strokeBorder(
                         isCompleted ? color : Color.gray.opacity(0.3),
                         lineWidth: 2.5
                     )
                     .frame(width: size, height: size)
+                    .scaleEffect(isPressed ? 0.85 : 1.0)
                 
+                // Заповнення кола при виконанні
                 if isCompleted {
                     Circle()
                         .fill(color)
                         .frame(width: size - 2, height: size - 2)
-                        .transition(.scale.combined(with: .opacity))
-                    
+                        .scaleEffect(animateCheck ? 1.1 : 1.0)
+                }
+                
+                // Галочка
+                if isCompleted {
                     Image(systemName: "checkmark")
                         .font(.system(size: size * 0.5, weight: .bold))
                         .foregroundColor(.white)
-                        .transition(.scale.combined(with: .opacity))
+                        .scaleEffect(animateCheck ? 1.15 : 1.0)
                 }
                 
+                // Ripple effect (спрощений)
+                if showRipple {
+                    Circle()
+                        .stroke(color.opacity(0.4), lineWidth: 1.5)
+                        .frame(width: size, height: size)
+                        .scaleEffect(2.0)
+                        .opacity(0)
+                }
+                
+                // Pulse effect при натисканні
                 if isPressed {
                     Circle()
-                        .stroke(color.opacity(0.3), lineWidth: 2)
-                        .frame(width: size + 8, height: size + 8)
-                        .opacity(0)
-                        .scaleEffect(1.5)
+                        .fill(color.opacity(0.2))
+                        .frame(width: size + 4, height: size + 4)
+                        .scaleEffect(isPressed ? 1.0 : 0.8)
                 }
             }
         }
         .buttonStyle(.plain)
-        .scaleEffect(isPressed ? 0.9 : 1.0)
+        .scaleEffect(isPressed ? 0.94 : 1.0)
         .animation(.spring(response: 0.2, dampingFraction: 0.6), value: isPressed)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isCompleted)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in isPressed = true }
-                .onEnded { _ in isPressed = false }
-        )
+        .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isCompleted)
     }
 }
 
@@ -478,6 +515,16 @@ struct ImprovedTaskCard: View {
     
     @State private var isHovered = false
     
+    // Helper функція для кольору пріоритету
+    private func priorityColor(_ priority: Int) -> Color {
+        switch priority {
+        case 1: return .yellow
+        case 2: return .orange
+        case 3: return .red
+        default: return .gray
+        }
+    }
+    
     var body: some View {
         HStack(spacing: 14) {
             // Покращений чекбокс
@@ -489,28 +536,47 @@ struct ImprovedTaskCard: View {
                 size: 24,
                 color: projectColor
             )
+            .contentShape(Rectangle())  // Визначає область кліку
+            .zIndex(1)  // Вищий пріоритет для чекбокса
+            .allowsHitTesting(true)  // Дозволяє приймати події
             
             // Контент
             VStack(alignment: .leading, spacing: 6) {
-                Text(task.title ?? "Без назви")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(task.isCompleted ? .secondary : .primary)
-                    .strikethrough(task.isCompleted, color: .secondary)
-                    .opacity(task.isCompleted ? 0.6 : 1.0)
-                    .animation(.easeInOut(duration: 0.2), value: task.isCompleted)
-                
-                if let dueDate = task.dueDate {
-                    HStack(spacing: 4) {
-                        Image(systemName: "calendar")
-                            .font(.caption2)
-                        Text(dueDate, style: .date)
-                            .font(.caption)
+                HStack(spacing: 8) {
+                    Text(task.title ?? "Без назви")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(task.isCompleted ? .secondary : .primary)
+                        .strikethrough(task.isCompleted, color: .secondary)
+                        .opacity(task.isCompleted ? 0.6 : 1.0)
+                        .scaleEffect(task.isCompleted ? 0.98 : 1.0, anchor: .leading)
+                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: task.isCompleted)
+                    
+                    // 🎯 ДОДАНО: Відображення пріоритету
+                    if task.priority > 0 {
+                        HStack(spacing: 2) {
+                            ForEach(0..<Int(task.priority), id: \.self) { _ in
+                                Image(systemName: "exclamationmark")
+                                    .font(.system(size: 10, weight: .bold))
+                            }
+                        }
+                        .foregroundColor(priorityColor(Int(task.priority)))
                     }
-                    .foregroundColor(dueDate < Date() ? .red : .orange)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background((dueDate < Date() ? Color.red : Color.orange).opacity(0.15))
-                    .clipShape(Capsule())
+                }
+                
+                HStack(spacing: 8) {
+                    if let dueDate = task.dueDate {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar")
+                                .font(.caption2)
+                            Text(dueDate, style: .date)
+                                .font(.caption)
+                        }
+                        .foregroundColor(dueDate < Date() ? .red : .orange)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background((dueDate < Date() ? Color.red : Color.orange).opacity(0.15))
+                        .clipShape(Capsule())
+                    }
                 }
             }
             
@@ -528,14 +594,17 @@ struct ImprovedTaskCard: View {
                 .opacity(isHovered ? 1 : 0)
         }
         .padding(16)
-        .background(.regularMaterial)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.regularMaterial)
+                .onTapGesture {
+                    print("🖱️ [ImprovedTaskCard] Card tapped (opening details)")
+                    onTap()
+                }
+        )
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(isHovered ? 0.08 : 0.03), radius: isHovered ? 8 : 2, y: isHovered ? 4 : 1)
         .scaleEffect(isHovered ? 1.02 : 1.0)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTap()
-        }
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.2)) {
                 isHovered = hovering
@@ -591,7 +660,8 @@ struct CompactTaskRow: View {
                     .foregroundColor(task.isCompleted ? .secondary : .primary)
                     .strikethrough(task.isCompleted, color: .secondary)
                     .opacity(task.isCompleted ? 0.6 : 1.0)
-                    .animation(.easeInOut(duration: 0.2), value: task.isCompleted)
+                    .scaleEffect(task.isCompleted ? 0.98 : 1.0, anchor: .leading)
+                    .animation(.spring(response: 0.4, dampingFraction: 0.7), value: task.isCompleted)
                 
                 Spacer()
             }

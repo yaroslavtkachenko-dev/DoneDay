@@ -69,12 +69,28 @@ class TaskRepository: BaseRepository<TaskEntity> {
         title: String,
         description: String? = nil,
         area: AreaEntity? = nil,
-        project: ProjectEntity? = nil
+        project: ProjectEntity? = nil,
+        priority: Int = 0,
+        dueDate: Date? = nil,
+        startDate: Date? = nil
     ) -> Result<TaskEntity, AppError> {
         // Валідація
         let validationResult = ValidationService.shared.validateTaskTitle(title)
         switch validationResult {
         case .success(let validTitle):
+            // Валідація пріоритету
+            let priorityResult = ValidationService.shared.validatePriority(priority)
+            guard case .success(let validPriority) = priorityResult else {
+                if case .failure(let error) = priorityResult {
+                    print("❌ [TaskRepository] Priority validation failed: \(error)")
+                    return .failure(error)
+                }
+                return .failure(.invalidData)
+            }
+            
+            // 🔍 DEBUG: Логування валідованого пріоритету
+            print("✅ [TaskRepository] Priority validated: \(validPriority)")
+            
             // Створення
             guard let task = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as? TaskEntity else {
                 return .failure(.taskCreationFailed(reason: "Не вдалося створити об'єкт TaskEntity"))
@@ -87,7 +103,13 @@ class TaskRepository: BaseRepository<TaskEntity> {
             task.isCompleted = false
             task.area = area
             task.project = project
+            task.priority = Int16(validPriority)
+            task.dueDate = dueDate
+            task.startDate = startDate
             task.sortOrder = Int32(Date().timeIntervalSince1970)
+            
+            // 🔍 DEBUG: Підтвердження встановлення пріоритету
+            print("🎯 [TaskRepository] Task created with priority: \(task.priority)")
             
             // Збереження
             let saveResult = save()

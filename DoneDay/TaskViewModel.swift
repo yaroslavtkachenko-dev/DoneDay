@@ -113,19 +113,40 @@ class TaskViewModel: ObservableObject {
     
     // MARK: - Task Actions
     
-    func addTask(title: String = "New Task", description: String = "", project: ProjectEntity? = nil, area: AreaEntity? = nil) {
+    func addTask(
+        title: String = "New Task",
+        description: String = "",
+        project: ProjectEntity? = nil,
+        area: AreaEntity? = nil,
+        priority: Int = 0,
+        dueDate: Date? = nil,
+        startDate: Date? = nil
+    ) {
+        // 🔍 DEBUG: Логування вхідних параметрів
+        print("📥 [TaskViewModel.addTask] Received parameters:")
+        print("   - title: \(title)")
+        print("   - priority: \(priority)")
+        print("   - dueDate: \(dueDate?.description ?? "nil")")
+        
         let result = taskRepository.createTask(
             title: title,
             description: description,
             area: area,
-            project: project
+            project: project,
+            priority: priority,
+            dueDate: dueDate,
+            startDate: startDate
         )
         
         switch result {
         case .success(let task):
-            logger.success("Task created: \(task.title ?? "")", category: .viewModel)
+            logger.success("Task created: \(task.title ?? "") with priority: \(task.priority)", category: .viewModel)
+            print("✅ [TaskViewModel.addTask] Task created successfully!")
+            print("   - Task ID: \(task.id?.uuidString ?? "unknown")")
+            print("   - Priority: \(task.priority)")
             // Не викликаємо loadTasks() - FRC автоматично оновить
         case .failure(let error):
+            print("❌ [TaskViewModel.addTask] Failed to create task: \(error)")
             ErrorAlertManager.shared.handle(error)
         }
     }
@@ -142,31 +163,22 @@ class TaskViewModel: ObservableObject {
         date: Date,
         description: String = "",
         project: ProjectEntity? = nil,
-        area: AreaEntity? = nil
+        area: AreaEntity? = nil,
+        priority: Int = 0
     ) {
         let result = taskRepository.createTask(
             title: title,
             description: description,
             area: area,
-            project: project
+            project: project,
+            priority: priority,
+            dueDate: date
         )
         
         switch result {
         case .success(let task):
-            // Встановлюємо дату в одному місці
-            task.dueDate = date
-            task.updatedAt = Date()
-            
-            // Зберігаємо через repository
-            let saveResult = taskRepository.save()
-            switch saveResult {
-            case .success:
-                logger.success("Task with due date created: \(task.title ?? "")", category: .viewModel)
-                // FRC автоматично оновить список
-            case .failure(let error):
-                ErrorAlertManager.shared.handle(error)
-            }
-            
+            logger.success("Task with due date created: \(task.title ?? "") with priority: \(task.priority)", category: .viewModel)
+            // FRC автоматично оновить список
         case .failure(let error):
             ErrorAlertManager.shared.handle(error)
         }

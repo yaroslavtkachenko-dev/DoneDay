@@ -84,15 +84,20 @@ struct ModernAddTaskView: View {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
         
+        // 🔍 DEBUG: Логування перед створенням
+        print("🎯 [ModernAddTaskView] Creating task with priority: \(priority)")
+        print("   Title: \(trimmedTitle)")
+        print("   Has Due Date: \(hasDueDate)")
+        
         taskViewModel.addTask(
             title: trimmedTitle,
             description: trimmedDescription.isEmpty ? "" : trimmedDescription,
             project: selectedProject,
-            area: selectedArea
+            area: selectedArea,
+            priority: priority,
+            dueDate: hasDueDate ? dueDate : nil,
+            startDate: hasStartDate ? startDate : nil
         )
-        
-        // Set additional properties after creation if needed
-        // This would require extending the TaskRepository
         
         presentationMode.wrappedValue.dismiss()
     }

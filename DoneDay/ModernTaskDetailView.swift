@@ -73,6 +73,12 @@ struct ModernTaskDetailView: View {
                     onChange: saveDate
                 )
                 
+                // Recurrence Section - Повторювані завдання
+                RecurrenceSection(
+                    task: task,
+                    onChange: saveRecurrence
+                )
+                
                 // Organization (Project & Area)
                 InteractiveOrganizationSection(
                     selectedProject: $selectedProject,
@@ -121,6 +127,11 @@ struct ModernTaskDetailView: View {
     
     private func saveDate() {
         task.dueDate = hasDueDate ? dueDate : nil
+        task.updatedAt = Date()
+        saveChanges()
+    }
+    
+    private func saveRecurrence() {
         task.updatedAt = Date()
         saveChanges()
     }
@@ -1470,6 +1481,228 @@ struct WheelMonthYearPicker: View {
         if let newDate = calendar.date(from: components) {
             date = newDate
         }
+    }
+}
+
+// MARK: - Recurrence Section
+
+struct RecurrenceSection: View {
+    let task: TaskEntity
+    let onChange: () -> Void
+    
+    @State private var selectedType: RecurrenceType
+    @State private var interval: Int
+    @State private var hasEndDate: Bool
+    @State private var endDate: Date
+    
+    init(task: TaskEntity, onChange: @escaping () -> Void) {
+        self.task = task
+        self.onChange = onChange
+        
+        _selectedType = State(initialValue: task.recurrenceTypeEnum)
+        _interval = State(initialValue: Int(task.recurrenceInterval))
+        _hasEndDate = State(initialValue: task.recurrenceEndDate != nil)
+        _endDate = State(initialValue: task.recurrenceEndDate ?? Date())
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header
+            HStack {
+                Image(systemName: "repeat")
+                    .foregroundColor(.purple)
+                    .font(.headline)
+                
+                Text("Повторювані завдання")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Spacer()
+            }
+            
+            // Тип повторення
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Повторювати")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                VStack(spacing: 8) {
+                    ForEach(RecurrenceType.allCases, id: \.self) { type in
+                        Button {
+                            selectedType = type
+                            task.recurrenceTypeEnum = type
+                            if type == .none {
+                                task.recurrenceInterval = 1
+                                task.recurrenceEndDate = nil
+                                hasEndDate = false
+                            }
+                            onChange()
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: type.icon)
+                                    .font(.title3)
+                                    .foregroundColor(type == .none ? .gray : .purple)
+                                    .frame(width: 24)
+                                
+                                Text(type.displayName)
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                if selectedType == type {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.title3)
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            .padding(12)
+                            .background {
+                                if selectedType == type {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.purple.opacity(0.1))
+                                        .overlay {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.purple.opacity(0.3), lineWidth: 1.5)
+                                        }
+                                } else {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color(NSColor.controlBackgroundColor))
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            
+            // Інтервал (якщо не "none")
+            if selectedType != .none {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Інтервал")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    HStack(spacing: 12) {
+                        Button {
+                            if interval > 1 {
+                                interval -= 1
+                                task.recurrenceInterval = Int16(interval)
+                                onChange()
+                            }
+                        } label: {
+                            Image(systemName: "minus.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(interval > 1 ? .blue : .gray)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(interval <= 1)
+                        
+                        Text("\(interval)")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .frame(width: 60)
+                            .padding(8)
+                            .background(Color(NSColor.controlBackgroundColor))
+                            .cornerRadius(10)
+                        
+                        Button {
+                            if interval < 99 {
+                                interval += 1
+                                task.recurrenceInterval = Int16(interval)
+                                onChange()
+                            }
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(interval < 99 ? .blue : .gray)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(interval >= 99)
+                        
+                        Spacer()
+                        
+                        Text(intervalDescription)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.vertical, 8)
+                
+                // Дата закінчення
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Закінчити повторення")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Toggle("", isOn: $hasEndDate)
+                            .labelsHidden()
+                            .onChange(of: hasEndDate) { newValue in
+                                task.recurrenceEndDate = newValue ? endDate : nil
+                                onChange()
+                            }
+                    }
+                    
+                    if hasEndDate {
+                        DatePicker(
+                            "Дата закінчення",
+                            selection: $endDate,
+                            displayedComponents: [.date]
+                        )
+                        .datePickerStyle(.compact)
+                        .labelsHidden()
+                        .onChange(of: endDate) { newValue in
+                            task.recurrenceEndDate = newValue
+                            onChange()
+                        }
+                        .padding(12)
+                        .background(Color(NSColor.controlBackgroundColor))
+                        .cornerRadius(10)
+                    }
+                }
+                
+                // Підказка
+                if let nextDate = task.nextRecurrenceDate() {
+                    HStack(spacing: 8) {
+                        Image(systemName: "info.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        
+                        Text("Наступне: \(formatDate(nextDate))")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(8)
+                }
+            }
+        }
+        .padding(16)
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    private var intervalDescription: String {
+        switch selectedType {
+        case .none: return ""
+        case .daily: return interval == 1 ? "день" : "днів"
+        case .weekly: return interval == 1 ? "тиждень" : "тижнів"
+        case .monthly: return interval == 1 ? "місяць" : "місяців"
+        case .yearly: return interval == 1 ? "рік" : "років"
+        }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "uk")
+        return formatter.string(from: date)
     }
 }
 

@@ -75,6 +75,11 @@ class PersistenceController {
         container = NSPersistentContainer(name: "DoneDay")
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+        } else {
+            // Увімкнути автоматичну міграцію
+            let description = container.persistentStoreDescriptions.first
+            description?.shouldMigrateStoreAutomatically = true
+            description?.shouldInferMappingModelAutomatically = true
         }
         
         var loadFailed = false

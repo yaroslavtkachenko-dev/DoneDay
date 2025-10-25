@@ -498,3 +498,87 @@ extension Date {
         return Calendar.current.dateComponents([.weekOfYear], from: Date(), to: self).weekOfYear ?? 0
     }
 }
+
+// MARK: - TaskEntity Recurrence Extensions
+
+enum RecurrenceType: String, CaseIterable {
+    case none = "none"
+    case daily = "daily"
+    case weekly = "weekly"
+    case monthly = "monthly"
+    case yearly = "yearly"
+    
+    var displayName: String {
+        switch self {
+        case .none: return "Не повторюється"
+        case .daily: return "Щодня"
+        case .weekly: return "Щотижня"
+        case .monthly: return "Щомісяця"
+        case .yearly: return "Щороку"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .none: return "xmark.circle"
+        case .daily: return "calendar"
+        case .weekly: return "calendar.badge.clock"
+        case .monthly: return "calendar.circle"
+        case .yearly: return "calendar.badge.exclamationmark"
+        }
+    }
+}
+
+extension TaskEntity {
+    var recurrenceTypeEnum: RecurrenceType {
+        get {
+            RecurrenceType(rawValue: recurrenceType ?? "none") ?? .none
+        }
+        set {
+            recurrenceType = newValue.rawValue
+        }
+    }
+    
+    var isRecurring: Bool {
+        return recurrenceTypeEnum != .none
+    }
+    
+    func nextRecurrenceDate() -> Date? {
+        guard isRecurring, let currentDueDate = dueDate else { return nil }
+        
+        let calendar = Calendar.current
+        let interval = Int(recurrenceInterval)
+        
+        switch recurrenceTypeEnum {
+        case .none:
+            return nil
+        case .daily:
+            return calendar.date(byAdding: .day, value: interval, to: currentDueDate)
+        case .weekly:
+            return calendar.date(byAdding: .weekOfYear, value: interval, to: currentDueDate)
+        case .monthly:
+            return calendar.date(byAdding: .month, value: interval, to: currentDueDate)
+        case .yearly:
+            return calendar.date(byAdding: .year, value: interval, to: currentDueDate)
+        }
+    }
+    
+    var recurrenceDescription: String {
+        guard isRecurring else { return "Не повторюється" }
+        
+        let interval = Int(recurrenceInterval)
+        let type = recurrenceTypeEnum
+        
+        if interval == 1 {
+            return type.displayName
+        } else {
+            switch type {
+            case .none: return "Не повторюється"
+            case .daily: return "Кожні \(interval) днів"
+            case .weekly: return "Кожні \(interval) тижнів"
+            case .monthly: return "Кожні \(interval) місяців"
+            case .yearly: return "Кожні \(interval) років"
+            }
+        }
+    }
+}
