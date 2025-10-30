@@ -97,28 +97,49 @@ class NotificationManager: ObservableObject {
     
     /// Створити нагадування для завдання
     func scheduleNotification(for task: TaskEntity) {
+        print("🔔 [scheduleNotification] Called for task: \(task.title ?? "Untitled")")
+        print("   reminderEnabled: \(task.reminderEnabled)")
+        print("   reminderTime: \(task.reminderTime?.description ?? "nil")")
+        print("   reminderOffset: \(task.reminderOffset)")
+        print("   dueDate: \(task.dueDate?.description ?? "nil")")
+        
         guard task.reminderEnabled else {
             logger.info("Reminder disabled for task: \(task.title ?? "Untitled")", category: .notification)
+            print("❌ Reminder is disabled, skipping")
             return
         }
         
         guard isAuthorized else {
             logger.warning("Not authorized to schedule notifications", category: .notification)
+            print("❌ Not authorized for notifications")
             requestAuthorization { [weak self] granted in
                 if granted {
+                    print("✅ Authorization granted, retrying schedule")
                     self?.scheduleNotification(for: task)
                 }
             }
             return
         }
         
+        print("✅ Authorized: \(isAuthorized)")
+        
         // Визначити час нагадування
         let reminderDate = calculateReminderDate(for: task)
         
+        print("📅 Calculated reminder date: \(reminderDate?.description ?? "nil")")
+        print("📅 Current date: \(Date())")
+        
         guard let date = reminderDate, date > Date() else {
             logger.warning("Invalid reminder date for task: \(task.title ?? "Untitled")", category: .notification)
+            print("❌ Invalid reminder date or date is in the past!")
+            if let reminderDate = reminderDate {
+                print("   Reminder date: \(reminderDate)")
+                print("   Is in past: \(reminderDate <= Date())")
+            }
             return
         }
+        
+        print("✅ Valid reminder date: \(date)")
         
         // Створити контент нотифікації
         let content = createNotificationContent(for: task)
@@ -140,34 +161,38 @@ class NotificationManager: ObservableObject {
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
         // Додати нотифікацію
+        print("➕ Adding notification request with ID: \(identifier)")
         notificationCenter.add(request) { error in
             if let error = error {
                 logger.error("Failed to schedule notification: \(error.localizedDescription)", category: .notification)
+                print("❌ Failed to schedule: \(error.localizedDescription)")
             } else {
                 logger.success("Notification scheduled for task: \(task.title ?? "Untitled") at \(date)", category: .notification)
+                print("✅ Notification scheduled successfully!")
+                print("   Task: \(task.title ?? "Untitled")")
+                print("   Time: \(date)")
+                print("   ID: \(identifier)")
             }
         }
     }
     
     /// Розрахувати час нагадування на основі налаштувань завдання
+    /// Apple Reminders Style:
+    /// - reminderTime = основний час нагадування
+    /// - reminderOffset = скільки хвилин РАНІШЕ нагадати (якщо > 0)
     private func calculateReminderDate(for task: TaskEntity) -> Date? {
-        // Якщо є конкретний час нагадування
-        if let reminderTime = task.reminderTime {
-            return reminderTime
+        guard let mainReminderTime = task.reminderTime else {
+            return nil
         }
         
-        // Якщо є offset від dueDate
-        if let dueDate = task.dueDate, task.reminderOffset > 0 {
-            let offsetSeconds = TimeInterval(task.reminderOffset * 60) // конвертуємо хвилини в секунди
-            return dueDate.addingTimeInterval(-offsetSeconds)
+        // Якщо offset > 0, нагадуємо РАНІШЕ основного часу
+        if task.reminderOffset > 0 {
+            let offsetSeconds = TimeInterval(task.reminderOffset * 60)
+            return mainReminderTime.addingTimeInterval(-offsetSeconds)
         }
         
-        // Якщо є dueDate але немає offset - за 15 хвилин до дедлайну (default)
-        if let dueDate = task.dueDate {
-            return dueDate.addingTimeInterval(-15 * 60) // 15 хвилин
-        }
-        
-        return nil
+        // Якщо offset == 0, нагадуємо точно в основний час
+        return mainReminderTime
     }
     
     /// Створити контент нотифікації

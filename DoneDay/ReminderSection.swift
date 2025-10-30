@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-// MARK: - Reminder Section
+// MARK: - Reminder Section (Apple Reminders Style)
 
 struct ReminderSection: View {
     @Binding var reminderEnabled: Bool
@@ -16,7 +16,7 @@ struct ReminderSection: View {
     @Binding var reminderOffset: Int16
     let dueDate: Date?
     
-    @State private var showingReminderPicker = false
+    @State private var alertEarly = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -31,12 +31,12 @@ struct ReminderSection: View {
                         .frame(width: 24)
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Увімкнути нагадування")
+                        Text("Нагадати мене")
                             .font(.body)
                             .fontWeight(.medium)
                         
                         if reminderEnabled {
-                            Text(reminderDescription)
+                            Text(mainReminderDescription)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -52,37 +52,73 @@ struct ReminderSection: View {
                 if reminderEnabled {
                     Divider()
                     
-                    if dueDate != nil {
-                        // Опції відносно дедлайну
-                        VStack(spacing: 12) {
-                            ForEach(ReminderOptionType.allCases, id: \.self) { option in
-                                ReminderOptionRow(
-                                    option: option,
-                                    isSelected: reminderType == option
-                                ) {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        reminderType = option
-                                        updateReminderValues()
-                                    }
+                    // Час нагадування
+                    DatePicker(
+                        "Час",
+                        selection: Binding(
+                            get: { reminderTime ?? dueDate ?? Date().addingTimeInterval(3600) },
+                            set: { newDate in
+                                reminderTime = newDate
+                                // Якщо є раннє нагадування, оновити offset
+                                if alertEarly {
+                                    updateOffsetFromType()
                                 }
                             }
-                        }
-                    } else {
-                        // Якщо немає дедлайну - тільки конкретний час
-                        VStack(spacing: 12) {
-                            Text("Оберіть час нагадування")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                        ),
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    .datePickerStyle(.compact)
+                    .padding(12)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(10)
+                    
+                    // Нагадати раніше (Alert early)
+                    if reminderTime != nil {
+                        Divider()
+                        
+                        HStack(spacing: 16) {
+                            Image(systemName: "clock.badge.exclamationmark")
+                                .font(.title3)
+                                .foregroundColor(.blue)
+                                .frame(width: 24)
                             
-                            DatePicker(
-                                "Час нагадування",
-                                selection: Binding(
-                                    get: { reminderTime ?? Date() },
-                                    set: { reminderTime = $0 }
-                                ),
-                                displayedComponents: [.date, .hourAndMinute]
-                            )
-                            .datePickerStyle(.compact)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Нагадати раніше")
+                                    .font(.body)
+                                    .fontWeight(.medium)
+                                
+                                if alertEarly {
+                                    Text(earlyAlertDescription)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: $alertEarly)
+                                .labelsHidden()
+                        }
+                        
+                        // Опції раннього нагадування
+                        if alertEarly {
+                            VStack(spacing: 8) {
+                                ForEach([
+                                    ("15 хвилин до", 15),
+                                    ("30 хвилин до", 30),
+                                    ("1 годину до", 60),
+                                    ("1 день до", 1440)
+                                ], id: \.1) { title, minutes in
+                                    EarlyAlertOption(
+                                        title: title,
+                                        minutes: minutes,
+                                        isSelected: reminderOffset == minutes,
+                                        action: {
+                                            reminderOffset = Int16(minutes)
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -96,13 +132,51 @@ struct ReminderSection: View {
         .onChange(of: reminderEnabled) { enabled in
             if !enabled {
                 // Скинути значення при вимкненні
-                reminderTime = nil
+                alertEarly = false
                 reminderOffset = 0
             } else {
-                // Встановити дефолтні значення при увімкненні
-                updateReminderValues()
+                // Встановити час на дедлайн або через годину
+                if reminderTime == nil {
+                    reminderTime = dueDate ?? Date().addingTimeInterval(3600)
+                }
             }
         }
+        .onChange(of: alertEarly) { enabled in
+            if !enabled {
+                reminderOffset = 0
+            } else {
+                // Дефолтний offset - 15 хвилин
+                reminderOffset = 15
+            }
+        }
+    }
+    
+    // Helper descriptions
+    private var mainReminderDescription: String {
+        guard let time = reminderTime else { return "Налаштуйте час" }
+        
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "uk_UA")
+        
+        return formatter.string(from: time)
+    }
+    
+    private var earlyAlertDescription: String {
+        switch reminderOffset {
+        case 15: return "За 15 хвилин"
+        case 30: return "За 30 хвилин"
+        case 60: return "За 1 годину"
+        case 1440: return "За 1 день"
+        default: return "Налаштовано"
+        }
+    }
+    
+    private func updateOffsetFromType() {
+        // Оновити час нагадування на основі offset
+        guard let mainTime = reminderTime else { return }
+        // Логіка вже в NotificationManager
     }
     
     private var reminderDescription: String {
@@ -233,6 +307,36 @@ struct ReminderOptionRow: View {
                         }
                     }
             }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Early Alert Option
+
+struct EarlyAlertOption: View {
+    let title: String
+    let minutes: Int
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Text(title)
+                    .font(.body)
+                    .foregroundColor(isSelected ? .white : .primary)
+                
+                Spacer()
+                
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.white)
+                }
+            }
+            .padding(12)
+            .background(isSelected ? Color.blue : Color(NSColor.controlBackgroundColor))
+            .cornerRadius(10)
         }
         .buttonStyle(.plain)
     }
