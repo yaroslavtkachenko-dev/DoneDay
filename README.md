@@ -24,7 +24,7 @@ DoneDay is a native task management application built with SwiftUI and Core Data
 ## Requirements
 - Xcode 15 or later
 - Swift 5.9+
-- iOS 17.0+ / macOS 14.0+
+- iOS 16.0+ / macOS 13.0+
 
 ## Installation
 ```bash
@@ -59,14 +59,7 @@ Key files/directories:
 
 ## Dynamic Island
 - Integrated for supported iPhone models.
-- See `DoneDay/DynamicIsland*` files for the implementation used to surface quick task info.
-
-## Testing
-Run tests in Xcode:
-```bash
-# From Xcode
-⌘ + U
-```
+- See `DoneDay/DynamicIsland*` files for the implementation used to surface quick task info
 
 ## Contributing
 1. Fork the repository
@@ -79,4 +72,4 @@ Run tests in Xcode:
 This project is licensed under the MIT License. See `LICENSE` for details.
 
 ## Author
-Yaroslav Tkachenko — `@yaroslavlkachenko-dev`
+Yaroslav Tkachenko — [@yaroslavlkachenko-dev](https://github.com/yaroslavlkachenko-dev)
